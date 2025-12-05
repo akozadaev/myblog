@@ -1,4 +1,4 @@
-baseURL = "https://akozadaev/myblog/" 
+baseURL = 'https://akozadaev.github.io/myblog/'
 languageCode = "ru-ru"
 title = "Мой персональный блог"
 theme = "PaperMod"
