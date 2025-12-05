@@ -1,0 +1,12 @@
+baseURL = "https://akozadaev/myblog/" 
+languageCode = "ru-ru"
+title = "Мой персональный блог"
+theme = "PaperMod"
+
+[params]
+  author = "akozadaev"
+  description = "Заметки разработчика"
+  defaultTheme = "auto"  # light/dark/auto
+
+[markup.highlight]
+  noClasses = false
