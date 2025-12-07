@@ -1,3 +1,12 @@
-baseURL = 'https://example.org/'
-languageCode = 'en-us'
-title = 'My New Hugo Site'
+baseURL = 'https://akozadaev.github.io/myblog/'
+languageCode = "ru-ru"
+title = "Персональный блог бэкенд-разработчика"
+theme = "PaperMod"
+
+[params]
+  author = "akozadaev"
+  description = "Заметки разработчика"
+  defaultTheme = "auto"  # light/dark/auto
+
+[markup.highlight]
+  noClasses = false
