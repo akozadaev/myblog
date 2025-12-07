@@ -1,6 +1,6 @@
 +++
 date = '2025-12-07T07:50:55+03:00'
-draft = false
+draft = true
 title = 'Как создать такой блог'
 +++
 
@@ -208,7 +208,7 @@ func main() {
     fmt.Println("Hello, World!")
 }
 ```
-```
+
 
 ### Параметры front matter
 
@@ -317,7 +317,7 @@ hugo server -D --minify
 
 ### 2. Настройка GitHub Pages
 
-1. Перейдите в **Settings** → **Pages** вашего репозитория
+1. Перейдите в **Settings** → **Pages** вашего репозитоапараметррия
 2. В разделе **Source** выберите **GitHub Actions**
 
 ### 3. Настройка workflow
