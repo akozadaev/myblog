@@ -1,28 +1,11 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
-  <channel>
-    <title>Elasticsearch on Персональный блог бэкенд-разработчика</title>
-    <link>http://localhost:1314/myblog/tags/elasticsearch/</link>
-    <description>Recent content in Elasticsearch on Персональный блог бэкенд-разработчика</description>
-    <generator>Hugo -- 0.148.0</generator>
-    <language>ru-ru</language>
-    <lastBuildDate>Sat, 13 Dec 2025 15:00:00 +0300</lastBuildDate>
-    <atom:link href="http://localhost:1314/myblog/tags/elasticsearch/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>Рекомендательная система локаций для бизнеса: Go &#43; Elasticsearch</title>
-      <link>http://localhost:1314/myblog/posts/go-es-analytical-system/</link>
-      <pubDate>Sat, 13 Dec 2025 15:00:00 +0300</pubDate>
-      <guid>http://localhost:1314/myblog/posts/go-es-analytical-system/</guid>
-      <description>&lt;p&gt;Недавно я завершил работу над проектом &lt;a href=&#34;https://github.com/akozadaev/go_es_analytical_system&#34;&gt;go_es_analytical_system&lt;/a&gt; — рекомендательной системой для поиска и анализа локаций для различных типов бизнеса. Хочу поделиться опытом и рассказать, какие задачи решает эта система и какие технологии использовались.&lt;/p&gt;
-&lt;h2 id=&#34;зачем-это-нужно&#34;&gt;Зачем это нужно?&lt;/h2&gt;
-&lt;p&gt;Представьте ситуацию: вы хотите открыть кафе, ресторан или магазин. Где лучше разместить бизнес? Какие факторы учесть?&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;Трафик&lt;/strong&gt; — сколько людей проходит мимо локации&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Конкуренция&lt;/strong&gt; — сколько похожих заведений уже есть рядом&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Демография&lt;/strong&gt; — кто живёт и работает в этом районе&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;Доступность&lt;/strong&gt; — удобно ли добираться&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;Ручной анализ таких данных занимает недели. Моя система делает это за секунды, используя комбинацию PostgreSQL для справочников и Elasticsearch для полнотекстового поиска и ранжирования.&lt;/p&gt;</description>
-    </item>
-  </channel>
-</rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Elasticsearch on Персональный блог бэкенд-разработчика</title><link>https://akozadaev.github.io/myblog/tags/elasticsearch/</link><description>Recent content in Elasticsearch on Персональный блог бэкенд-разработчика</description><generator>Hugo -- 0.148.0</generator><language>ru-ru</language><lastBuildDate>Sun, 14 Dec 2025 12:50:00 +0300</lastBuildDate><atom:link href="https://akozadaev.github.io/myblog/tags/elasticsearch/index.xml" rel="self" type="application/rss+xml"/><item><title>OpenSearch для начинающих: индексы, маппинги и бустинг</title><link>https://akozadaev.github.io/myblog/posts/opensearch-guide/</link><pubDate>Sun, 14 Dec 2025 12:50:00 +0300</pubDate><guid>https://akozadaev.github.io/myblog/posts/opensearch-guide/</guid><description>&lt;p>OpenSearch -это мощная поисковая система с открытым исходным кодом, форк Elasticsearch. Если вы только начинаете работать с поисковыми системами, эта статья поможет разобраться в основах: как создавать индексы, настраивать структуру данных и использовать бустинг для улучшения релевантности результатов.&lt;/p>
+&lt;h2 id="что-такое-opensearch">Что такое OpenSearch?&lt;/h2>
+&lt;p>OpenSearch -это распределённая поисковая и аналитическая система, которая позволяет:&lt;/p>
+&lt;ul>
+&lt;li>Быстро искать по большим объёмам данных&lt;/li>
+&lt;li>Индексировать структурированные и неструктурированные данные&lt;/li>
+&lt;li>Выполнять сложные запросы с фильтрацией и ранжированием&lt;/li>
+&lt;li>Работать с геопространственными данными&lt;/li>
+&lt;li>Использовать векторный поиск для семантического поиска&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>Простыми словами&lt;/strong>: OpenSearch -это как Google для ваших данных. Вы загружаете документы, а система позволяет быстро находить нужные по запросу.&lt;/p></description></item></channel></rss>

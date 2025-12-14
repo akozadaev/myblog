@@ -1,29 +1,11 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
-  <channel>
-    <title>Поисковые Системы on Персональный блог бэкенд-разработчика</title>
-    <link>http://localhost:1314/myblog/tags/%D0%BF%D0%BE%D0%B8%D1%81%D0%BA%D0%BE%D0%B2%D1%8B%D0%B5-%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%8B/</link>
-    <description>Recent content in Поисковые Системы on Персональный блог бэкенд-разработчика</description>
-    <generator>Hugo -- 0.148.0</generator>
-    <language>ru-ru</language>
-    <lastBuildDate>Sun, 14 Dec 2025 12:50:00 +0300</lastBuildDate>
-    <atom:link href="http://localhost:1314/myblog/tags/%D0%BF%D0%BE%D0%B8%D1%81%D0%BA%D0%BE%D0%B2%D1%8B%D0%B5-%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%8B/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>OpenSearch для начинающих: индексы, маппинги и бустинг</title>
-      <link>http://localhost:1314/myblog/posts/opensearch-guide/</link>
-      <pubDate>Sun, 14 Dec 2025 12:50:00 +0300</pubDate>
-      <guid>http://localhost:1314/myblog/posts/opensearch-guide/</guid>
-      <description>&lt;p&gt;OpenSearch — это мощная поисковая система с открытым исходным кодом, форк Elasticsearch. Если вы только начинаете работать с поисковыми системами, эта статья поможет разобраться в основах: как создавать индексы, настраивать структуру данных и использовать бустинг для улучшения релевантности результатов.&lt;/p&gt;
-&lt;h2 id=&#34;что-такое-opensearch&#34;&gt;Что такое OpenSearch?&lt;/h2&gt;
-&lt;p&gt;OpenSearch — это распределённая поисковая и аналитическая система, которая позволяет:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Быстро искать по большим объёмам данных&lt;/li&gt;
-&lt;li&gt;Индексировать структурированные и неструктурированные данные&lt;/li&gt;
-&lt;li&gt;Выполнять сложные запросы с фильтрацией и ранжированием&lt;/li&gt;
-&lt;li&gt;Работать с геопространственными данными&lt;/li&gt;
-&lt;li&gt;Использовать векторный поиск для семантического поиска&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;strong&gt;Простыми словами&lt;/strong&gt;: OpenSearch — это как Google для ваших данных. Вы загружаете документы, а система позволяет быстро находить нужные по запросу.&lt;/p&gt;</description>
-    </item>
-  </channel>
-</rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Поисковые Системы on Персональный блог бэкенд-разработчика</title><link>https://akozadaev.github.io/myblog/tags/%D0%BF%D0%BE%D0%B8%D1%81%D0%BA%D0%BE%D0%B2%D1%8B%D0%B5-%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%8B/</link><description>Recent content in Поисковые Системы on Персональный блог бэкенд-разработчика</description><generator>Hugo -- 0.148.0</generator><language>ru-ru</language><lastBuildDate>Sun, 14 Dec 2025 12:50:00 +0300</lastBuildDate><atom:link href="https://akozadaev.github.io/myblog/tags/%D0%BF%D0%BE%D0%B8%D1%81%D0%BA%D0%BE%D0%B2%D1%8B%D0%B5-%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%8B/index.xml" rel="self" type="application/rss+xml"/><item><title>OpenSearch для начинающих: индексы, маппинги и бустинг</title><link>https://akozadaev.github.io/myblog/posts/opensearch-guide/</link><pubDate>Sun, 14 Dec 2025 12:50:00 +0300</pubDate><guid>https://akozadaev.github.io/myblog/posts/opensearch-guide/</guid><description>&lt;p>OpenSearch -это мощная поисковая система с открытым исходным кодом, форк Elasticsearch. Если вы только начинаете работать с поисковыми системами, эта статья поможет разобраться в основах: как создавать индексы, настраивать структуру данных и использовать бустинг для улучшения релевантности результатов.&lt;/p>
+&lt;h2 id="что-такое-opensearch">Что такое OpenSearch?&lt;/h2>
+&lt;p>OpenSearch -это распределённая поисковая и аналитическая система, которая позволяет:&lt;/p>
+&lt;ul>
+&lt;li>Быстро искать по большим объёмам данных&lt;/li>
+&lt;li>Индексировать структурированные и неструктурированные данные&lt;/li>
+&lt;li>Выполнять сложные запросы с фильтрацией и ранжированием&lt;/li>
+&lt;li>Работать с геопространственными данными&lt;/li>
+&lt;li>Использовать векторный поиск для семантического поиска&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>Простыми словами&lt;/strong>: OpenSearch -это как Google для ваших данных. Вы загружаете документы, а система позволяет быстро находить нужные по запросу.&lt;/p></description></item></channel></rss>
