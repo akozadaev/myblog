@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Elasticsearch on Персональный блог бэкенд-разработчика</title>
+    <link>http://localhost:1314/myblog/tags/elasticsearch/</link>
+    <description>Recent content in Elasticsearch on Персональный блог бэкенд-разработчика</description>
+    <generator>Hugo -- 0.148.0</generator>
+    <language>ru-ru</language>
+    <lastBuildDate>Sat, 13 Dec 2025 15:00:00 +0300</lastBuildDate>
+    <atom:link href="http://localhost:1314/myblog/tags/elasticsearch/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Рекомендательная система локаций для бизнеса: Go &#43; Elasticsearch</title>
+      <link>http://localhost:1314/myblog/posts/go-es-analytical-system/</link>
+      <pubDate>Sat, 13 Dec 2025 15:00:00 +0300</pubDate>
+      <guid>http://localhost:1314/myblog/posts/go-es-analytical-system/</guid>
+      <description>&lt;p&gt;Недавно я завершил работу над проектом &lt;a href=&#34;https://github.com/akozadaev/go_es_analytical_system&#34;&gt;go_es_analytical_system&lt;/a&gt; — рекомендательной системой для поиска и анализа локаций для различных типов бизнеса. Хочу поделиться опытом и рассказать, какие задачи решает эта система и какие технологии использовались.&lt;/p&gt;
+&lt;h2 id=&#34;зачем-это-нужно&#34;&gt;Зачем это нужно?&lt;/h2&gt;
+&lt;p&gt;Представьте ситуацию: вы хотите открыть кафе, ресторан или магазин. Где лучше разместить бизнес? Какие факторы учесть?&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Трафик&lt;/strong&gt; — сколько людей проходит мимо локации&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Конкуренция&lt;/strong&gt; — сколько похожих заведений уже есть рядом&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Демография&lt;/strong&gt; — кто живёт и работает в этом районе&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Доступность&lt;/strong&gt; — удобно ли добираться&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Ручной анализ таких данных занимает недели. Моя система делает это за секунды, используя комбинацию PostgreSQL для справочников и Elasticsearch для полнотекстового поиска и ранжирования.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>
