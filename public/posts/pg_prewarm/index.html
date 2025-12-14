@@ -1,4 +1,13 @@
-<!doctype html><html lang=en dir=auto data-theme=auto><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><meta name=robots content="index, follow"><title>Пояснение разницы скорости выполнения первого и последующих запросов к БД PostgreSQL | Персональный блог бэкенд-разработчика</title><meta name=keywords content><meta name=description content="Каждый, кто работает с PostgreSQL рано или поздно задается вопросом, почему повторный запрос работает быстрее:
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="auto">
+
+<head><script src="/myblog/livereload.js?mindelay=10&amp;v=2&amp;port=1314&amp;path=myblog/livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Пояснение разницы скорости выполнения первого и последующих запросов к БД PostgreSQL | Персональный блог бэкенд-разработчика</title>
+<meta name="keywords" content="">
+<meta name="description" content="Каждый, кто работает с PostgreSQL рано или поздно задается вопросом, почему повторный запрос работает быстрее:
 Потому что срабатывает кэширование.
 И это не одно кэширование, а сразу несколько уровней:
 
@@ -10,153 +19,427 @@
 Выбирает, какие индексы использовать, как делать JOIN-ы и т.д.
 
 Этот план сохраняется в памяти для текущего соединения (иногда глобально, зависит от настроек).
-При повторном запросе сервер использует уже готовый план, не пересчитывая его с нуля. Это экономит много времени."><meta name=author content="akozadaev"><link rel=canonical href=https://akozadaev.github.io/myblog/posts/pg_prewarm/><link crossorigin=anonymous href=/myblog/assets/css/stylesheet.a5781257de4197b8e3d54346acdf1dd55a9ba4cb91dcace192fc1baf228c08b5.css integrity="sha256-pXgSV95Bl7jj1UNGrN8d1VqbpMuR3KzhkvwbryKMCLU=" rel="preload stylesheet" as=style><link rel=icon href=https://akozadaev.github.io/myblog/favicon.ico><link rel=icon type=image/png sizes=16x16 href=https://akozadaev.github.io/myblog/favicon-16x16.png><link rel=icon type=image/png sizes=32x32 href=https://akozadaev.github.io/myblog/favicon-32x32.png><link rel=apple-touch-icon href=https://akozadaev.github.io/myblog/apple-touch-icon.png><link rel=mask-icon href=https://akozadaev.github.io/myblog/safari-pinned-tab.svg><meta name=theme-color content="#2e2e33"><meta name=msapplication-TileColor content="#2e2e33"><link rel=alternate hreflang=en href=https://akozadaev.github.io/myblog/posts/pg_prewarm/><noscript><style>#theme-toggle,.top-link{display:none}</style><style>@media(prefers-color-scheme:dark){:root{--theme:rgb(29, 30, 32);--entry:rgb(46, 46, 51);--primary:rgb(218, 218, 219);--secondary:rgb(155, 156, 157);--tertiary:rgb(65, 66, 68);--content:rgb(196, 196, 197);--code-block-bg:rgb(46, 46, 51);--code-bg:rgb(55, 56, 62);--border:rgb(51, 51, 51);color-scheme:dark}.list{background:var(--theme)}.toc{background:var(--entry)}}@media(prefers-color-scheme:light){.list::-webkit-scrollbar-thumb{border-color:var(--code-bg)}}</style></noscript><script>localStorage.getItem("pref-theme")==="dark"?document.querySelector("html").dataset.theme="dark":localStorage.getItem("pref-theme")==="light"?document.querySelector("html").dataset.theme="light":window.matchMedia("(prefers-color-scheme: dark)").matches?document.querySelector("html").dataset.theme="dark":document.querySelector("html").dataset.theme="light"</script><meta property="og:url" content="https://akozadaev.github.io/myblog/posts/pg_prewarm/"><meta property="og:site_name" content="Персональный блог бэкенд-разработчика"><meta property="og:title" content="Пояснение разницы скорости выполнения первого и последующих запросов к БД PostgreSQL"><meta property="og:description" content="Каждый, кто работает с PostgreSQL рано или поздно задается вопросом, почему повторный запрос работает быстрее: Потому что срабатывает кэширование.
-И это не одно кэширование, а сразу несколько уровней:
-1. Кэширование плана выполнения (Query Plan Cache) Первый раз, когда отправляется SQL-запрос, PostgreSQL анализирует его:
-Понимает структуру. Строит оптимальный план выполнения (EXPLAIN). Выбирает, какие индексы использовать, как делать JOIN-ы и т.д. Этот план сохраняется в памяти для текущего соединения (иногда глобально, зависит от настроек). При повторном запросе сервер использует уже готовый план, не пересчитывая его с нуля. Это экономит много времени."><meta property="og:locale" content="ru-ru"><meta property="og:type" content="article"><meta property="article:section" content="posts"><meta property="article:published_time" content="2025-12-13T12:43:57+03:00"><meta property="article:modified_time" content="2025-12-13T12:43:57+03:00"><meta name=twitter:card content="summary"><meta name=twitter:title content="Пояснение разницы скорости выполнения первого и последующих запросов к БД PostgreSQL"><meta name=twitter:description content="Каждый, кто работает с PostgreSQL рано или поздно задается вопросом, почему повторный запрос работает быстрее:
-Потому что срабатывает кэширование.
-И это не одно кэширование, а сразу несколько уровней:
+При повторном запросе сервер использует уже готовый план, не пересчитывая его с нуля. Это экономит много времени.">
+<meta name="author" content="akozadaev">
+<link rel="canonical" href="http://localhost:1314/myblog/posts/pg_prewarm/">
+<link crossorigin="anonymous" href="/myblog/assets/css/stylesheet.a5781257de4197b8e3d54346acdf1dd55a9ba4cb91dcace192fc1baf228c08b5.css" integrity="sha256-pXgSV95Bl7jj1UNGrN8d1VqbpMuR3KzhkvwbryKMCLU=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1314/myblog/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1314/myblog/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1314/myblog/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1314/myblog/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1314/myblog/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1314/myblog/posts/pg_prewarm/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
 
-1. Кэширование плана выполнения (Query Plan Cache)
-Первый раз, когда отправляется SQL-запрос, PostgreSQL анализирует его:
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
 
-Понимает структуру.
-Строит оптимальный план выполнения (EXPLAIN).
-Выбирает, какие индексы использовать, как делать JOIN-ы и т.д.
+            .list {
+                background: var(--theme);
+            }
 
-Этот план сохраняется в памяти для текущего соединения (иногда глобально, зависит от настроек).
-При повторном запросе сервер использует уже готовый план, не пересчитывая его с нуля. Это экономит много времени."><script type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Posts","item":"https://akozadaev.github.io/myblog/posts/"},{"@type":"ListItem","position":2,"name":"Пояснение разницы скорости выполнения первого и последующих запросов к БД PostgreSQL","item":"https://akozadaev.github.io/myblog/posts/pg_prewarm/"}]}</script><script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"Пояснение разницы скорости выполнения первого и последующих запросов к БД PostgreSQL","name":"Пояснение разницы скорости выполнения первого и последующих запросов к БД PostgreSQL","description":"Каждый, кто работает с PostgreSQL рано или поздно задается вопросом, почему повторный запрос работает быстрее: Потому что срабатывает кэширование.\nИ это не одно кэширование, а сразу несколько уровней:\n1. Кэширование плана выполнения (Query Plan Cache) Первый раз, когда отправляется SQL-запрос, PostgreSQL анализирует его:\nПонимает структуру. Строит оптимальный план выполнения (EXPLAIN). Выбирает, какие индексы использовать, как делать JOIN-ы и т.д. Этот план сохраняется в памяти для текущего соединения (иногда глобально, зависит от настроек). При повторном запросе сервер использует уже готовый план, не пересчитывая его с нуля. Это экономит много времени.\n","keywords":[],"articleBody":"Каждый, кто работает с PostgreSQL рано или поздно задается вопросом, почему повторный запрос работает быстрее: Потому что срабатывает кэширование.\nИ это не одно кэширование, а сразу несколько уровней:\n1. Кэширование плана выполнения (Query Plan Cache) Первый раз, когда отправляется SQL-запрос, PostgreSQL анализирует его:\nПонимает структуру. Строит оптимальный план выполнения (EXPLAIN). Выбирает, какие индексы использовать, как делать JOIN-ы и т.д. Этот план сохраняется в памяти для текущего соединения (иногда глобально, зависит от настроек). При повторном запросе сервер использует уже готовый план, не пересчитывая его с нуля. Это экономит много времени.\n2. Кэширование данных в памяти (PostgreSQL Buffer Cache) Когда таблица, индекс или часть данных читается первый раз, PostgreSQL загружает страницы (страницы по 8Кб) в оперативную память (shared_buffers). При последующих выполнениях запроса, если нужные данные уже есть в памяти (в shared_buffers), то с диска их читать НЕ нужно, данные берутся мгновенно из RAM. Чтение из RAM многократно быстрее, чем с диска.\n3. Кэширование ОС (Filesystem Cache) Даже если PostgreSQL сама не все выгрузит из shared_buffers (например, в очень загруженной системе), операционная система держит файлы в кэше на уровне файловой системы. В таком случае файловая система\" при повторном доступе становится почти как RAM.\nВ качестве обобщения о причинах ускорения повторных запросов Кэш плана запроса: повторно использовать уже готовый план выполнения. Кэш данных в PostgreSQL: данные считываются не с диска, а из памяти (shared_buffers). Кэш данных в операционной системе: файлы/страницы остаются в RAM, быстрее доступ. Проверка утверждений Это можно проверить на только что установленной базе с чистым кэшем, желательно, чтобы данных было достаточно, чтобы оценить разницу скорости выполнения:\n-- Первый запуск (будет медленно) EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM большая_таблица WHERE условие; -- Сразу повторный запуск (будет заметно быстрее) EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM большая_таблица WHERE условие; Первый Execution Time будет больше, второй — сильно меньше,\nи в BUFFERS будет видно, что чтение идет из shared hit, а не disk read.\nЧто делать, если нет не кэшированной БД? PostgreSQL есть разные уровни кэша - и очищать их нужно по-разному:\nПлан выполнения запросов: DISCARD PLANS. Сессионный кэш (подключение): DISCARD ALL. Кэш ОС (filesystem cache): специальной командой в Linux (ручное сбрасывание). Буферный кэш базы (shared_buffers): нельзя очистить напрямую — только через перезапуск сервера. Подробнее, с примерами:\nОчистить только планы выполнения (DISCARD) - Удаляет все кэшированные планы запроса в текущем соединении. DISCARD PLANS; Очистить буферный кэш PostgreSQL (shared_buffers) - перезапуск сервера (PostgreSQL сам управляет shared_buffers, и вручную очистить нельзя). sudo systemctl restart postgresql или\npg_ctl restart Очистить кэш операционной системы (Linux) (нужны привелегии) # Сбросить только pagecache: sudo sync echo 1 | sudo tee /proc/sys/vm/drop_caches # Или полностью (pagecache + dentries + inodes): sudo sync echo 3 | sudo tee /proc/sys/vm/drop_caches Для полной очистки в одной команде:\nsudo systemctl restart postgresql sudo sync echo 3 | sudo tee /proc/sys/vm/drop_caches # Как “прогреть” базу в PostgreSQL? Первый способ. С помощью расширения:\nPostgreSQL имеет специальное расширение для прогрева кэша: pg_prewarm. Шаги:\nУстановить расширение, если оно не установлено ранее (по умолчанию его нет): CREATE EXTENSION IF NOT EXISTS pg_prewarm; Прогреть таблицу (это загрузит данные таблицы в shared_buffers.): SELECT pg_prewarm('название_таблицы'); Прогреть индекс: SELECT pg_prewarm('название_индекса'); Второй способ. Если нет возможности установить расширение, можно просто принудительно прочитать все строки:\nSELECT COUNT(*) FROM твоя_таблица; или\nSELECT * FROM твоя_таблица; COUNT(*)предпочтительнее, не будет использоваться трафик для передачи большого ответа.\nВ результате:\nPostgreSQL прогрузит все страницы таблицы в shared_buffers. После этого реальные тестовые запросы будут выполняться “из памяти”. Третий способ. Автоматический прогрев при старте PostgreSQL Для того, чтобы при перезапуске базы данные прогревались сами можно использовать pg_prewarm в связке с настройками.\nВ postgresql.conf включить pg_prewarm.autoprewarm:\nshared_preload_libraries = 'pg_prewarm' Тогда база будет сохранять список прогретых страниц и автоматически загружать их в кэш при старте сервера.\nКраткое сравнение способов. Как и когда их применять? pg_prewarm вручную: при единичном тестировании или периодическом прогреве. Чтение всех строк (COUNT(*)): при простых тестах без расширений. Автопрогрев (pg_prewarm + autoprewarm): для продакшн-систем с контролем прогрева при рестарте. Проверка прогрета таблица или нет: CREATE EXTENSION IF NOT EXISTS pg_buffercache; SELECT count(*) AS buffers_loaded FROM pg_buffercache WHERE relfilenode = (SELECT relfilenode FROM pg_class WHERE relname = 'имя_таблицы'); Нужно учесть тот момент, что в таблице pg_class в поле relfilenode значение 0 указывает на то, что это виртуальное или нефизическое отношение, которое не имеет собственного файла на диске. Обычно это относится к представлениям, индексам, секционированным таблицам или другим объектам, которые не хранят данные напрямую в файлах, а скорее зависят от других физических отношений. Так что для секционированной (партицированной) таблицы такой способ проверки не применим.\nДополнительно Включаем pg_prewarm: CREATE EXTENSION IF NOT EXISTS pg_prewarm; Скрипт для прогрева всех таблиц схемы (этот код НЕ прогревает индексы): DO $$ DECLARE rec record; BEGIN -- Для каждой таблицы в указанной схеме FOR rec IN SELECT schemaname, tablename FROM pg_tables WHERE schemaname = 'public' -- поменяй на свою схему если нужно LOOP -- Прогреваем таблицу через pg_prewarm RAISE NOTICE 'Prewarming table: %.%', rec.schemaname, rec.tablename; PERFORM pg_prewarm(quote_ident(rec.schemaname) || '.' || quote_ident(rec.tablename)); END LOOP; END $$ LANGUAGE plpgsql; Результат будет выглядеть примерно так:\nNOTICE: Prewarming table: public.user NOTICE: Prewarming table: public.user_link NOTICE: Prewarming table: public.link NOTICE: Prewarming table: public.task NOTICE: Prewarming table: public.job_queue NOTICE: Prewarming table: public.goose_db_version NOTICE: Prewarming table: public.prepared_report ERROR: fork \"main\" does not exist for this relation CONTEXT: SQL statement \"SELECT pg_prewarm(quote_ident(rec.schemaname) || '.' || quote_ident(rec.tablename))\" PL/pgSQL function inline_code_block line 13 at PERFORM SQL state: 22023 Расширенный вариант с индексами (если нужно прогревать и таблицы, и их индексы): DO $$ DECLARE rec record; BEGIN -- Прогреваем все таблицы FOR rec IN SELECT schemaname, tablename FROM pg_tables WHERE schemaname = 'public' LOOP RAISE NOTICE 'Prewarming table: %.%', rec.schemaname, rec.tablename; PERFORM pg_prewarm(quote_ident(rec.schemaname) || '.' || quote_ident(rec.tablename)); END LOOP; -- Прогреваем все индексы FOR rec IN SELECT schemaname, indexname FROM pg_indexes WHERE schemaname = 'public' LOOP RAISE NOTICE 'Prewarming index: %.%', rec.schemaname, rec.indexname; PERFORM pg_prewarm(quote_ident(rec.schemaname) || '.' || quote_ident(rec.indexname)); END LOOP; END $$ LANGUAGE plpgsql; Хранимая процедура prewarm_schema, чтобы можно было прогревать любую схему одной командой: CREATE OR REPLACE PROCEDURE prewarm_schema(schema_name text) LANGUAGE plpgsql AS $$ DECLARE rec record; BEGIN -- Прогрев всех таблиц в указанной схеме FOR rec IN SELECT schemaname, tablename FROM pg_tables WHERE schemaname = schema_name LOOP RAISE NOTICE 'Prewarming table: %.%', rec.schemaname, rec.tablename; PERFORM pg_prewarm(quote_ident(rec.schemaname) || '.' || quote_ident(rec.tablename)); END LOOP; -- Прогрев всех индексов в указанной схеме FOR rec IN SELECT schemaname, indexname FROM pg_indexes WHERE schemaname = schema_name LOOP RAISE NOTICE 'Prewarming index: %.%', rec.schemaname, rec.indexname; PERFORM pg_prewarm(quote_ident(rec.schemaname) || '.' || quote_ident(rec.indexname)); END LOOP; END; $$; Вызов процедуры:\nCALL prewarm_schema('public'); -- или любое другое имя схемы Хранимая процедура только для таблиц (без индексов): CREATE OR REPLACE PROCEDURE prewarm_only_tables(schema_name text) LANGUAGE plpgsql AS $$ DECLARE rec record; BEGIN FOR rec IN SELECT schemaname, tablename FROM pg_tables WHERE schemaname = schema_name LOOP RAISE NOTICE 'Prewarming table: %.%', rec.schemaname, rec.tablename; PERFORM pg_prewarm(quote_ident(rec.schemaname) || '.' || quote_ident(rec.tablename)); END LOOP; END; $$; ","wordCount":"1110","inLanguage":"en","datePublished":"2025-12-13T12:43:57+03:00","dateModified":"2025-12-13T12:43:57+03:00","author":{"@type":"Person","name":"akozadaev"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://akozadaev.github.io/myblog/posts/pg_prewarm/"},"publisher":{"@type":"Organization","name":"Персональный блог бэкенд-разработчика","logo":{"@type":"ImageObject","url":"https://akozadaev.github.io/myblog/favicon.ico"}}}</script></head><body id=top><header class=header><nav class=nav><div class=logo><a href=https://akozadaev.github.io/myblog/ accesskey=h title="Персональный блог бэкенд-разработчика (Alt + H)">Персональный блог бэкенд-разработчика</a><div class=logo-switches><button id=theme-toggle accesskey=t title="(Alt + T)" aria-label="Toggle theme">
-<svg id="moon" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-<svg id="sun" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></div></div><ul id=menu></ul></nav></header><main class=main><article class=post-single><header class=post-header><h1 class="post-title entry-hint-parent">Пояснение разницы скорости выполнения первого и последующих запросов к БД PostgreSQL</h1><div class=post-meta><span title='2025-12-13 12:43:57 +0300 MSK'>December 13, 2025</span>&nbsp;·&nbsp;<span>akozadaev</span></div></header><div class=post-content><h3 id=каждый-кто-работает-с-postgresql-рано-или-поздно-задается-вопросом-почему-повторный-запрос-работает-быстрее>Каждый, кто работает с PostgreSQL рано или поздно задается вопросом, почему повторный запрос работает быстрее:<a hidden class=anchor aria-hidden=true href=#каждый-кто-работает-с-postgresql-рано-или-поздно-задается-вопросом-почему-повторный-запрос-работает-быстрее>#</a></h3><p><strong>Потому что срабатывает кэширование.</strong><br>И это не одно кэширование, а сразу несколько уровней:</p><hr><h3 id=1-кэширование-плана-выполнения-query-plan-cache>1. Кэширование плана выполнения (<strong>Query Plan Cache</strong>)<a hidden class=anchor aria-hidden=true href=#1-кэширование-плана-выполнения-query-plan-cache>#</a></h3><p>Первый раз, когда отправляется SQL-запрос, PostgreSQL <strong>анализирует</strong> его:</p><ul><li>Понимает структуру.</li><li>Строит оптимальный <strong>план выполнения</strong> (EXPLAIN).</li><li>Выбирает, какие индексы использовать, как делать JOIN-ы и т.д.</li></ul><p>Этот план сохраняется в памяти для текущего соединения (иногда глобально, зависит от настроек).
-При <strong>повторном запросе</strong> сервер использует уже готовый план, <strong>не пересчитывая его с нуля</strong>. Это экономит много времени.</p><hr><h3 id=2-кэширование-данных-в-памяти-postgresql-buffer-cache>2. Кэширование данных в памяти (<strong>PostgreSQL Buffer Cache</strong>)<a hidden class=anchor aria-hidden=true href=#2-кэширование-данных-в-памяти-postgresql-buffer-cache>#</a></h3><p>Когда таблица, индекс или часть данных читается первый раз, PostgreSQL <strong>загружает страницы</strong> (страницы по 8Кб) <strong>в оперативную память</strong> (shared_buffers).
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+        @media (prefers-color-scheme: light) {
+            .list::-webkit-scrollbar-thumb {
+                border-color: var(--code-bg);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1314/myblog/" accesskey="h" title="Персональный блог бэкенд-разработчика (Alt + H)">Персональный блог бэкенд-разработчика</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title entry-hint-parent">
+      Пояснение разницы скорости выполнения первого и последующих запросов к БД PostgreSQL
+    </h1>
+    <div class="post-meta"><span title='2025-12-13 12:43:57 +0300 MSK'>December 13, 2025</span>&nbsp;·&nbsp;<span>akozadaev</span>
+
+</div>
+  </header> 
+  <div class="post-content"><h3 id="каждый-кто-работает-с-postgresql-рано-или-поздно-задается-вопросом-почему-повторный-запрос-работает-быстрее">Каждый, кто работает с PostgreSQL рано или поздно задается вопросом, почему повторный запрос работает быстрее:<a hidden class="anchor" aria-hidden="true" href="#каждый-кто-работает-с-postgresql-рано-или-поздно-задается-вопросом-почему-повторный-запрос-работает-быстрее">#</a></h3>
+<p><strong>Потому что срабатывает кэширование.</strong><br>
+И это не одно кэширование, а сразу несколько уровней:</p>
+<hr>
+<h3 id="1-кэширование-плана-выполнения-query-plan-cache">1. Кэширование плана выполнения (<strong>Query Plan Cache</strong>)<a hidden class="anchor" aria-hidden="true" href="#1-кэширование-плана-выполнения-query-plan-cache">#</a></h3>
+<p>Первый раз, когда отправляется SQL-запрос, PostgreSQL <strong>анализирует</strong> его:</p>
+<ul>
+<li>Понимает структуру.</li>
+<li>Строит оптимальный <strong>план выполнения</strong> (EXPLAIN).</li>
+<li>Выбирает, какие индексы использовать, как делать JOIN-ы и т.д.</li>
+</ul>
+<p>Этот план сохраняется в памяти для текущего соединения (иногда глобально, зависит от настроек).
+При <strong>повторном запросе</strong> сервер использует уже готовый план, <strong>не пересчитывая его с нуля</strong>. Это экономит много времени.</p>
+<hr>
+<h3 id="2-кэширование-данных-в-памяти-postgresql-buffer-cache">2. Кэширование данных в памяти (<strong>PostgreSQL Buffer Cache</strong>)<a hidden class="anchor" aria-hidden="true" href="#2-кэширование-данных-в-памяти-postgresql-buffer-cache">#</a></h3>
+<p>Когда таблица, индекс или часть данных читается первый раз, PostgreSQL <strong>загружает страницы</strong> (страницы по 8Кб) <strong>в оперативную память</strong> (shared_buffers).
 При последующих выполнениях запроса, если нужные данные уже есть в памяти (в shared_buffers), то <strong>с диска</strong> их читать <strong>НЕ нужно</strong>, данные берутся <strong>мгновенно</strong> из RAM.
-Чтение из RAM многократно быстрее, чем с диска.</p><hr><h3 id=3-кэширование-ос-filesystem-cache>3. Кэширование ОС (<strong>Filesystem Cache</strong>)<a hidden class=anchor aria-hidden=true href=#3-кэширование-ос-filesystem-cache>#</a></h3><p>Даже если PostgreSQL сама не все выгрузит из shared_buffers (например, в очень загруженной системе), операционная система <strong>держит файлы в кэше</strong> на уровне файловой системы. В таком случае файловая система" при повторном доступе становится почти как RAM.</p><hr><h3 id=в-качестве-обобщения-о-причинах-ускорения-повторных-запросов>В качестве обобщения о причинах ускорения повторных запросов<a hidden class=anchor aria-hidden=true href=#в-качестве-обобщения-о-причинах-ускорения-повторных-запросов>#</a></h3><ul><li>Кэш плана запроса: повторно использовать уже готовый план выполнения.</li><li>Кэш данных в PostgreSQL: данные считываются не с диска, а из памяти (shared_buffers).</li><li>Кэш данных в операционной системе: файлы/страницы остаются в RAM, быстрее доступ.</li></ul><h3 id=проверка-утверждений>Проверка утверждений<a hidden class=anchor aria-hidden=true href=#проверка-утверждений>#</a></h3><p>Это можно проверить на только что установленной базе с чистым кэшем, желательно, чтобы данных было достаточно, чтобы оценить разницу скорости выполнения:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-SQL data-lang=SQL><span class=line><span class=cl><span class=c1>-- Первый запуск (будет медленно)
-</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>EXPLAIN</span><span class=w> </span><span class=p>(</span><span class=k>ANALYZE</span><span class=p>,</span><span class=w> </span><span class=n>BUFFERS</span><span class=p>)</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>SELECT</span><span class=w> </span><span class=o>*</span><span class=w> </span><span class=k>FROM</span><span class=w> </span><span class=err>большая</span><span class=n>_таблица</span><span class=w> </span><span class=k>WHERE</span><span class=w> </span><span class=err>условие</span><span class=p>;</span><span class=w>
-</span></span></span></code></pre></div><div class=highlight><pre tabindex=0 class=chroma><code class=language-SQL data-lang=SQL><span class=line><span class=cl><span class=c1>-- Сразу повторный запуск (будет заметно быстрее)
-</span></span></span><span class=line><span class=cl><span class=c1></span><span class=k>EXPLAIN</span><span class=w> </span><span class=p>(</span><span class=k>ANALYZE</span><span class=p>,</span><span class=w> </span><span class=n>BUFFERS</span><span class=p>)</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>SELECT</span><span class=w> </span><span class=o>*</span><span class=w> </span><span class=k>FROM</span><span class=w> </span><span class=err>большая</span><span class=n>_таблица</span><span class=w> </span><span class=k>WHERE</span><span class=w> </span><span class=err>условие</span><span class=p>;</span><span class=w>
-</span></span></span></code></pre></div><p><strong>Первый <code>Execution Time</code></strong> будет больше, <strong>второй</strong> — сильно меньше,<br><strong>и в BUFFERS</strong> будет видно, что чтение идет из <code>shared hit</code>, а не <code>disk read</code>.</p><h3 id=что-делать-если-нет-не-кэшированной-бд>Что делать, если нет не кэшированной БД?<a hidden class=anchor aria-hidden=true href=#что-делать-если-нет-не-кэшированной-бд>#</a></h3><p>PostgreSQL есть разные уровни кэша - и очищать их нужно по-разному:</p><ul><li>План выполнения запросов: <code>DISCARD PLANS</code>.</li><li>Сессионный кэш (подключение): <code>DISCARD ALL</code>.</li><li>Кэш ОС (filesystem cache): специальной командой в Linux (ручное сбрасывание).</li><li>Буферный кэш базы (shared_buffers): нельзя очистить напрямую — только через перезапуск сервера.</li></ul><p>Подробнее, с примерами:</p><ol><li>Очистить только <strong>планы выполнения</strong> (<code>DISCARD</code>) - Удаляет все кэшированные планы запроса в текущем соединении.</li></ol><div class=highlight><pre tabindex=0 class=chroma><code class=language-SQL data-lang=SQL><span class=line><span class=cl><span class=n>DISCARD</span><span class=w> </span><span class=n>PLANS</span><span class=p>;</span><span class=w>
-</span></span></span></code></pre></div><ol start=2><li>Очистить <strong>буферный кэш</strong> PostgreSQL (shared_buffers) - перезапуск сервера (PostgreSQL <strong>сам</strong> управляет shared_buffers, и <strong>вручную очистить нельзя</strong>).</li></ol><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>sudo systemctl restart postgresql
-</span></span></code></pre></div><p>или</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>pg_ctl restart
-</span></span></code></pre></div><ol start=3><li>Очистить <strong>кэш операционной системы (Linux)</strong> (нужны привелегии)</li></ol><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># Сбросить только pagecache:</span>
-</span></span><span class=line><span class=cl>sudo sync
-</span></span><span class=line><span class=cl><span class=nb>echo</span> <span class=m>1</span> <span class=p>|</span> sudo tee /proc/sys/vm/drop_caches
-</span></span><span class=line><span class=cl>
-</span></span><span class=line><span class=cl><span class=c1># Или полностью (pagecache + dentries + inodes):</span>
-</span></span><span class=line><span class=cl>sudo sync
-</span></span><span class=line><span class=cl><span class=nb>echo</span> <span class=m>3</span> <span class=p>|</span> sudo tee /proc/sys/vm/drop_caches
-</span></span></code></pre></div><p>Для полной очистки в одной команде:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>sudo systemctl restart postgresql
-</span></span><span class=line><span class=cl>sudo sync
-</span></span><span class=line><span class=cl><span class=nb>echo</span> <span class=m>3</span> <span class=p>|</span> sudo tee /proc/sys/vm/drop_caches
-</span></span></code></pre></div><h3 id=-как-прогреть-базу-в-postgresql># Как &ldquo;прогреть&rdquo; базу в PostgreSQL?<a hidden class=anchor aria-hidden=true href=#-как-прогреть-базу-в-postgresql>#</a></h3><p><strong>Первый способ.</strong> С помощью расширения:</p><p>PostgreSQL имеет специальное расширение для прогрева кэша: <strong><code>pg_prewarm</code></strong>.
-<strong>Шаги:</strong></p><ol><li>Установить расширение, если оно не установлено ранее (по умолчанию его нет):</li></ol><div class=highlight><pre tabindex=0 class=chroma><code class=language-SQL data-lang=SQL><span class=line><span class=cl><span class=k>CREATE</span><span class=w> </span><span class=n>EXTENSION</span><span class=w> </span><span class=k>IF</span><span class=w> </span><span class=k>NOT</span><span class=w> </span><span class=k>EXISTS</span><span class=w> </span><span class=n>pg_prewarm</span><span class=p>;</span><span class=w>
-</span></span></span></code></pre></div><ol start=2><li>Прогреть таблицу (это загрузит данные таблицы в <strong>shared_buffers</strong>.):</li></ol><div class=highlight><pre tabindex=0 class=chroma><code class=language-SQL data-lang=SQL><span class=line><span class=cl><span class=k>SELECT</span><span class=w> </span><span class=n>pg_prewarm</span><span class=p>(</span><span class=s1>&#39;название_таблицы&#39;</span><span class=p>);</span><span class=w>
-</span></span></span></code></pre></div><ol start=3><li>Прогреть индекс:</li></ol><div class=highlight><pre tabindex=0 class=chroma><code class=language-SQL data-lang=SQL><span class=line><span class=cl><span class=k>SELECT</span><span class=w> </span><span class=n>pg_prewarm</span><span class=p>(</span><span class=s1>&#39;название_индекса&#39;</span><span class=p>);</span><span class=w>
-</span></span></span></code></pre></div><p><strong>Второй способ.</strong> Если нет возможности установить расширение, можно просто принудительно <strong>прочитать</strong> все строки:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-SQL data-lang=SQL><span class=line><span class=cl><span class=k>SELECT</span><span class=w> </span><span class=k>COUNT</span><span class=p>(</span><span class=o>*</span><span class=p>)</span><span class=w> </span><span class=k>FROM</span><span class=w> </span><span class=err>твоя</span><span class=n>_таблица</span><span class=p>;</span><span class=w>
-</span></span></span></code></pre></div><p>или</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-SQL data-lang=SQL><span class=line><span class=cl><span class=k>SELECT</span><span class=w> </span><span class=o>*</span><span class=w> </span><span class=k>FROM</span><span class=w> </span><span class=err>твоя</span><span class=n>_таблица</span><span class=p>;</span><span class=w>
-</span></span></span></code></pre></div><p><code>COUNT(*)</code>предпочтительнее, не будет использоваться трафик для передачи большого ответа.</p><p><strong>В результате:</strong></p><ul><li>PostgreSQL прогрузит все страницы таблицы в shared_buffers.</li><li>После этого реальные тестовые запросы будут выполняться &ldquo;из памяти&rdquo;.</li></ul><p><strong>Третий способ.</strong> Автоматический прогрев при старте PostgreSQL
-Для того, чтобы <strong>при перезапуске базы</strong> данные прогревались сами можно использовать <code>pg_prewarm</code> в связке с настройками.</p><p>В <code>postgresql.conf</code> включить <code>pg_prewarm.autoprewarm</code>:</p><pre tabindex=0><code class=language-conf data-lang=conf>shared_preload_libraries = &#39;pg_prewarm&#39;
-</code></pre><p>Тогда база будет <strong>сохранять список прогретых страниц</strong> и автоматически загружать их в кэш при старте сервера.</p><h3 id=краткое-сравнение-способов-как-и-когда-их-применять>Краткое сравнение способов. Как и когда их применять?<a hidden class=anchor aria-hidden=true href=#краткое-сравнение-способов-как-и-когда-их-применять>#</a></h3><ul><li><code>pg_prewarm</code> вручную: при единичном тестировании или периодическом прогреве.</li><li>Чтение всех строк (<code>COUNT(*)</code>): при простых тестах без расширений.</li><li>Автопрогрев (<code>pg_prewarm + autoprewarm</code>): для продакшн-систем с контролем прогрева при рестарте.</li></ul><h3 id=проверка-прогрета-таблица-или-нет>Проверка прогрета таблица или нет:<a hidden class=anchor aria-hidden=true href=#проверка-прогрета-таблица-или-нет>#</a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-SQL data-lang=SQL><span class=line><span class=cl><span class=k>CREATE</span><span class=w> </span><span class=n>EXTENSION</span><span class=w> </span><span class=k>IF</span><span class=w> </span><span class=k>NOT</span><span class=w> </span><span class=k>EXISTS</span><span class=w> </span><span class=n>pg_buffercache</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>SELECT</span><span class=w> </span><span class=k>count</span><span class=p>(</span><span class=o>*</span><span class=p>)</span><span class=w> </span><span class=k>AS</span><span class=w> </span><span class=n>buffers_loaded</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>FROM</span><span class=w> </span><span class=n>pg_buffercache</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>WHERE</span><span class=w> </span><span class=n>relfilenode</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=p>(</span><span class=k>SELECT</span><span class=w> </span><span class=n>relfilenode</span><span class=w> </span><span class=k>FROM</span><span class=w> </span><span class=n>pg_class</span><span class=w> </span><span class=k>WHERE</span><span class=w> </span><span class=n>relname</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=s1>&#39;имя_таблицы&#39;</span><span class=p>);</span><span class=w>
-</span></span></span></code></pre></div><p>Нужно учесть тот момент, что в таблице <code>pg_class</code> в поле <code>relfilenode</code> значение 0 указывает на то, что это виртуальное или нефизическое отношение, которое не имеет собственного файла на диске. Обычно это относится к представлениям, индексам, секционированным таблицам или другим объектам, которые не хранят данные напрямую в файлах, а скорее зависят от других физических отношений. Так что для секционированной (партицированной) таблицы такой способ проверки не применим.</p><h3 id=дополнительно>Дополнительно<a hidden class=anchor aria-hidden=true href=#дополнительно>#</a></h3><ol start=0><li>Включаем pg_prewarm:</li></ol><div class=highlight><pre tabindex=0 class=chroma><code class=language-SQL data-lang=SQL><span class=line><span class=cl><span class=k>CREATE</span><span class=w> </span><span class=n>EXTENSION</span><span class=w> </span><span class=k>IF</span><span class=w> </span><span class=k>NOT</span><span class=w> </span><span class=k>EXISTS</span><span class=w> </span><span class=n>pg_prewarm</span><span class=p>;</span><span class=w>
-</span></span></span></code></pre></div><ol><li>Скрипт для прогрева всех таблиц схемы (этот код <strong>НЕ прогревает индексы</strong>):</li></ol><div class=highlight><pre tabindex=0 class=chroma><code class=language-sql data-lang=sql><span class=line><span class=cl><span class=k>DO</span><span class=w> </span><span class=err>$$</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>DECLARE</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>rec</span><span class=w> </span><span class=n>record</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>BEGIN</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>-- Для каждой таблицы в указанной схеме
-</span></span></span><span class=line><span class=cl><span class=c1></span><span class=w>    </span><span class=k>FOR</span><span class=w> </span><span class=n>rec</span><span class=w> </span><span class=k>IN</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>SELECT</span><span class=w> </span><span class=n>schemaname</span><span class=p>,</span><span class=w> </span><span class=n>tablename</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>FROM</span><span class=w> </span><span class=n>pg_tables</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>WHERE</span><span class=w> </span><span class=n>schemaname</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=s1>&#39;public&#39;</span><span class=w> </span><span class=c1>-- поменяй на свою схему если нужно
-</span></span></span><span class=line><span class=cl><span class=c1></span><span class=w>    </span><span class=n>LOOP</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>-- Прогреваем таблицу через pg_prewarm
-</span></span></span><span class=line><span class=cl><span class=c1></span><span class=w>        </span><span class=n>RAISE</span><span class=w> </span><span class=n>NOTICE</span><span class=w> </span><span class=s1>&#39;Prewarming table: %.%&#39;</span><span class=p>,</span><span class=w> </span><span class=n>rec</span><span class=p>.</span><span class=n>schemaname</span><span class=p>,</span><span class=w> </span><span class=n>rec</span><span class=p>.</span><span class=n>tablename</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>PERFORM</span><span class=w> </span><span class=n>pg_prewarm</span><span class=p>(</span><span class=n>quote_ident</span><span class=p>(</span><span class=n>rec</span><span class=p>.</span><span class=n>schemaname</span><span class=p>)</span><span class=w> </span><span class=o>||</span><span class=w> </span><span class=s1>&#39;.&#39;</span><span class=w> </span><span class=o>||</span><span class=w> </span><span class=n>quote_ident</span><span class=p>(</span><span class=n>rec</span><span class=p>.</span><span class=n>tablename</span><span class=p>));</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>END</span><span class=w> </span><span class=n>LOOP</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>END</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=err>$$</span><span class=w> </span><span class=k>LANGUAGE</span><span class=w> </span><span class=n>plpgsql</span><span class=p>;</span><span class=w>
-</span></span></span></code></pre></div><p>Результат будет выглядеть примерно так:</p><pre tabindex=0><code>NOTICE: Prewarming table: public.user NOTICE: Prewarming table: public.user_link 
+Чтение из RAM многократно быстрее, чем с диска.</p>
+<hr>
+<h3 id="3-кэширование-ос-filesystem-cache">3. Кэширование ОС (<strong>Filesystem Cache</strong>)<a hidden class="anchor" aria-hidden="true" href="#3-кэширование-ос-filesystem-cache">#</a></h3>
+<p>Даже если PostgreSQL сама не все выгрузит из shared_buffers (например, в очень загруженной системе), операционная система <strong>держит файлы в кэше</strong> на уровне файловой системы. В таком случае файловая система&quot; при повторном доступе становится почти как RAM.</p>
+<hr>
+<h3 id="в-качестве-обобщения-о-причинах-ускорения-повторных-запросов">В качестве обобщения о причинах ускорения повторных запросов<a hidden class="anchor" aria-hidden="true" href="#в-качестве-обобщения-о-причинах-ускорения-повторных-запросов">#</a></h3>
+<ul>
+<li>Кэш плана запроса: повторно использовать уже готовый план выполнения.</li>
+<li>Кэш данных в PostgreSQL: данные считываются не с диска, а из памяти (shared_buffers).</li>
+<li>Кэш данных в операционной системе: файлы/страницы остаются в RAM, быстрее доступ.</li>
+</ul>
+<h3 id="проверка-утверждений">Проверка утверждений<a hidden class="anchor" aria-hidden="true" href="#проверка-утверждений">#</a></h3>
+<p>Это можно проверить на только что установленной базе с чистым кэшем, желательно, чтобы данных было достаточно, чтобы оценить разницу скорости выполнения:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-SQL" data-lang="SQL"><span class="line"><span class="cl"><span class="c1">-- Первый запуск (будет медленно)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">EXPLAIN</span><span class="w"> </span><span class="p">(</span><span class="k">ANALYZE</span><span class="p">,</span><span class="w"> </span><span class="n">BUFFERS</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="err">большая</span><span class="n">_таблица</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="err">условие</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-SQL" data-lang="SQL"><span class="line"><span class="cl"><span class="c1">-- Сразу повторный запуск (будет заметно быстрее)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">EXPLAIN</span><span class="w"> </span><span class="p">(</span><span class="k">ANALYZE</span><span class="p">,</span><span class="w"> </span><span class="n">BUFFERS</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="err">большая</span><span class="n">_таблица</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="err">условие</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p><strong>Первый <code>Execution Time</code></strong> будет больше,  <strong>второй</strong> — сильно меньше,<br>
+<strong>и в BUFFERS</strong> будет видно, что чтение идет из <code>shared hit</code>, а не <code>disk read</code>.</p>
+<h3 id="что-делать-если-нет-не-кэшированной-бд">Что делать, если нет не кэшированной БД?<a hidden class="anchor" aria-hidden="true" href="#что-делать-если-нет-не-кэшированной-бд">#</a></h3>
+<p>PostgreSQL есть разные уровни кэша - и очищать их нужно по-разному:</p>
+<ul>
+<li>План выполнения запросов: <code>DISCARD PLANS</code>.</li>
+<li>Сессионный кэш (подключение): <code>DISCARD ALL</code>.</li>
+<li>Кэш ОС (filesystem cache): специальной командой в Linux (ручное сбрасывание).</li>
+<li>Буферный кэш базы (shared_buffers): нельзя очистить напрямую — только через перезапуск сервера.</li>
+</ul>
+<p>Подробнее, с примерами:</p>
+<ol>
+<li>Очистить только <strong>планы выполнения</strong> (<code>DISCARD</code>) - Удаляет все кэшированные планы запроса в текущем соединении.</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-SQL" data-lang="SQL"><span class="line"><span class="cl"><span class="n">DISCARD</span><span class="w"> </span><span class="n">PLANS</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><ol start="2">
+<li>Очистить <strong>буферный кэш</strong> PostgreSQL (shared_buffers) - перезапуск сервера (PostgreSQL <strong>сам</strong> управляет shared_buffers, и <strong>вручную очистить нельзя</strong>).</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo systemctl restart postgresql
+</span></span></code></pre></div><p>или</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">pg_ctl restart
+</span></span></code></pre></div><ol start="3">
+<li>Очистить <strong>кэш операционной системы (Linux)</strong> (нужны привелегии)</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># Сбросить только pagecache:</span>
+</span></span><span class="line"><span class="cl">sudo sync
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="m">1</span> <span class="p">|</span> sudo tee /proc/sys/vm/drop_caches
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Или полностью (pagecache + dentries + inodes):</span>
+</span></span><span class="line"><span class="cl">sudo sync
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="m">3</span> <span class="p">|</span> sudo tee /proc/sys/vm/drop_caches
+</span></span></code></pre></div><p>Для полной очистки в одной команде:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo systemctl restart postgresql
+</span></span><span class="line"><span class="cl">sudo sync
+</span></span><span class="line"><span class="cl"><span class="nb">echo</span> <span class="m">3</span> <span class="p">|</span> sudo tee /proc/sys/vm/drop_caches
+</span></span></code></pre></div><h3 id="-как-прогреть-базу-в-postgresql"># Как &ldquo;прогреть&rdquo; базу в PostgreSQL?<a hidden class="anchor" aria-hidden="true" href="#-как-прогреть-базу-в-postgresql">#</a></h3>
+<p><strong>Первый способ.</strong> С помощью расширения:</p>
+<p>PostgreSQL имеет специальное расширение для прогрева кэша: <strong><code>pg_prewarm</code></strong>.
+<strong>Шаги:</strong></p>
+<ol>
+<li>Установить расширение, если оно не установлено ранее (по умолчанию его нет):</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-SQL" data-lang="SQL"><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="n">EXTENSION</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">pg_prewarm</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><ol start="2">
+<li>Прогреть таблицу (это загрузит данные таблицы в <strong>shared_buffers</strong>.):</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-SQL" data-lang="SQL"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="n">pg_prewarm</span><span class="p">(</span><span class="s1">&#39;название_таблицы&#39;</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><ol start="3">
+<li>Прогреть индекс:</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-SQL" data-lang="SQL"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="n">pg_prewarm</span><span class="p">(</span><span class="s1">&#39;название_индекса&#39;</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><p><strong>Второй способ.</strong> Если нет возможности установить расширение, можно просто принудительно <strong>прочитать</strong> все строки:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-SQL" data-lang="SQL"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="err">твоя</span><span class="n">_таблица</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>или</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-SQL" data-lang="SQL"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="err">твоя</span><span class="n">_таблица</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p><code>COUNT(*)</code>предпочтительнее, не будет использоваться трафик для передачи большого ответа.</p>
+<p><strong>В результате:</strong></p>
+<ul>
+<li>PostgreSQL прогрузит все страницы таблицы в shared_buffers.</li>
+<li>После этого реальные тестовые запросы будут выполняться &ldquo;из памяти&rdquo;.</li>
+</ul>
+<p><strong>Третий способ.</strong>  Автоматический прогрев при старте PostgreSQL
+Для того, чтобы <strong>при перезапуске базы</strong> данные прогревались сами можно использовать <code>pg_prewarm</code> в связке с настройками.</p>
+<p>В <code>postgresql.conf</code> включить <code>pg_prewarm.autoprewarm</code>:</p>
+<pre tabindex="0"><code class="language-conf" data-lang="conf">shared_preload_libraries = &#39;pg_prewarm&#39;
+</code></pre><p>Тогда база будет <strong>сохранять список прогретых страниц</strong> и автоматически загружать их в кэш при старте сервера.</p>
+<h3 id="краткое-сравнение-способов-как-и-когда-их-применять">Краткое сравнение способов. Как и когда их применять?<a hidden class="anchor" aria-hidden="true" href="#краткое-сравнение-способов-как-и-когда-их-применять">#</a></h3>
+<ul>
+<li><code>pg_prewarm</code> вручную: при единичном тестировании или периодическом прогреве.</li>
+<li>Чтение всех строк (<code>COUNT(*)</code>): при простых тестах без расширений.</li>
+<li>Автопрогрев (<code>pg_prewarm + autoprewarm</code>): для продакшн-систем с контролем прогрева при рестарте.</li>
+</ul>
+<h3 id="проверка-прогрета-таблица-или-нет">Проверка прогрета таблица или нет:<a hidden class="anchor" aria-hidden="true" href="#проверка-прогрета-таблица-или-нет">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-SQL" data-lang="SQL"><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="n">EXTENSION</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">pg_buffercache</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">SELECT</span><span class="w"> </span><span class="k">count</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">buffers_loaded</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">FROM</span><span class="w"> </span><span class="n">pg_buffercache</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">WHERE</span><span class="w"> </span><span class="n">relfilenode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="k">SELECT</span><span class="w"> </span><span class="n">relfilenode</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">pg_class</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">relname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;имя_таблицы&#39;</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><p>Нужно учесть тот момент, что в таблице  <code>pg_class</code>  в поле  <code>relfilenode</code>  значение 0 указывает на то, что это виртуальное или нефизическое отношение, которое не имеет собственного файла на диске. Обычно это относится к представлениям, индексам, секционированным таблицам или другим объектам, которые не хранят данные напрямую в файлах, а скорее зависят от других физических отношений. Так что для секционированной (партицированной) таблицы такой способ проверки не применим.</p>
+<h3 id="дополнительно">Дополнительно<a hidden class="anchor" aria-hidden="true" href="#дополнительно">#</a></h3>
+<ol start="0">
+<li>Включаем pg_prewarm:</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-SQL" data-lang="SQL"><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="n">EXTENSION</span><span class="w"> </span><span class="k">IF</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">EXISTS</span><span class="w"> </span><span class="n">pg_prewarm</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><ol>
+<li>Скрипт для прогрева всех таблиц схемы (этот код <strong>НЕ прогревает индексы</strong>):</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">DO</span><span class="w"> </span><span class="err">$$</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">DECLARE</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">rec</span><span class="w"> </span><span class="n">record</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">BEGIN</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">-- Для каждой таблицы в указанной схеме
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="k">FOR</span><span class="w"> </span><span class="n">rec</span><span class="w"> </span><span class="k">IN</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">SELECT</span><span class="w"> </span><span class="n">schemaname</span><span class="p">,</span><span class="w"> </span><span class="n">tablename</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">FROM</span><span class="w"> </span><span class="n">pg_tables</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">WHERE</span><span class="w"> </span><span class="n">schemaname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;public&#39;</span><span class="w"> </span><span class="c1">-- поменяй на свою схему если нужно
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="n">LOOP</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="c1">-- Прогреваем таблицу через pg_prewarm
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">        </span><span class="n">RAISE</span><span class="w"> </span><span class="n">NOTICE</span><span class="w"> </span><span class="s1">&#39;Prewarming table: %.%&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">rec</span><span class="p">.</span><span class="n">schemaname</span><span class="p">,</span><span class="w"> </span><span class="n">rec</span><span class="p">.</span><span class="n">tablename</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">PERFORM</span><span class="w"> </span><span class="n">pg_prewarm</span><span class="p">(</span><span class="n">quote_ident</span><span class="p">(</span><span class="n">rec</span><span class="p">.</span><span class="n">schemaname</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="s1">&#39;.&#39;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">quote_ident</span><span class="p">(</span><span class="n">rec</span><span class="p">.</span><span class="n">tablename</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">END</span><span class="w"> </span><span class="n">LOOP</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">END</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="err">$$</span><span class="w"> </span><span class="k">LANGUAGE</span><span class="w"> </span><span class="n">plpgsql</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>Результат будет выглядеть примерно так:</p>
+<pre tabindex="0"><code>NOTICE: Prewarming table: public.user NOTICE: Prewarming table: public.user_link 
 NOTICE: Prewarming table: public.link NOTICE: Prewarming table: public.task 
 NOTICE: Prewarming table: public.job_queue NOTICE: Prewarming table: 
 public.goose_db_version NOTICE: Prewarming table: public.prepared_report ERROR: 
 fork &#34;main&#34; does not exist for this relation CONTEXT: SQL statement &#34;SELECT 
 pg_prewarm(quote_ident(rec.schemaname) || &#39;.&#39; || quote_ident(rec.tablename))&#34; 
 PL/pgSQL function inline_code_block line 13 at PERFORM SQL state: 22023
-</code></pre><ol start=2><li>Расширенный вариант с индексами (если нужно прогревать <strong>и таблицы, и их индексы</strong>):</li></ol><div class=highlight><pre tabindex=0 class=chroma><code class=language-SQL data-lang=SQL><span class=line><span class=cl><span class=k>DO</span><span class=w> </span><span class=err>$$</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>DECLARE</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>rec</span><span class=w> </span><span class=n>record</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>BEGIN</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>-- Прогреваем все таблицы
-</span></span></span><span class=line><span class=cl><span class=c1></span><span class=w>    </span><span class=k>FOR</span><span class=w> </span><span class=n>rec</span><span class=w> </span><span class=k>IN</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>SELECT</span><span class=w> </span><span class=n>schemaname</span><span class=p>,</span><span class=w> </span><span class=n>tablename</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>FROM</span><span class=w> </span><span class=n>pg_tables</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>WHERE</span><span class=w> </span><span class=n>schemaname</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=s1>&#39;public&#39;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>LOOP</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>RAISE</span><span class=w> </span><span class=n>NOTICE</span><span class=w> </span><span class=s1>&#39;Prewarming table: %.%&#39;</span><span class=p>,</span><span class=w> </span><span class=n>rec</span><span class=p>.</span><span class=n>schemaname</span><span class=p>,</span><span class=w> </span><span class=n>rec</span><span class=p>.</span><span class=n>tablename</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>PERFORM</span><span class=w> </span><span class=n>pg_prewarm</span><span class=p>(</span><span class=n>quote_ident</span><span class=p>(</span><span class=n>rec</span><span class=p>.</span><span class=n>schemaname</span><span class=p>)</span><span class=w> </span><span class=o>||</span><span class=w> </span><span class=s1>&#39;.&#39;</span><span class=w> </span><span class=o>||</span><span class=w> </span><span class=n>quote_ident</span><span class=p>(</span><span class=n>rec</span><span class=p>.</span><span class=n>tablename</span><span class=p>));</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>END</span><span class=w> </span><span class=n>LOOP</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>-- Прогреваем все индексы
-</span></span></span><span class=line><span class=cl><span class=c1></span><span class=w>    </span><span class=k>FOR</span><span class=w> </span><span class=n>rec</span><span class=w> </span><span class=k>IN</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>SELECT</span><span class=w> </span><span class=n>schemaname</span><span class=p>,</span><span class=w> </span><span class=n>indexname</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>FROM</span><span class=w> </span><span class=n>pg_indexes</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>WHERE</span><span class=w> </span><span class=n>schemaname</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=s1>&#39;public&#39;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>LOOP</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>RAISE</span><span class=w> </span><span class=n>NOTICE</span><span class=w> </span><span class=s1>&#39;Prewarming index: %.%&#39;</span><span class=p>,</span><span class=w> </span><span class=n>rec</span><span class=p>.</span><span class=n>schemaname</span><span class=p>,</span><span class=w> </span><span class=n>rec</span><span class=p>.</span><span class=n>indexname</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>PERFORM</span><span class=w> </span><span class=n>pg_prewarm</span><span class=p>(</span><span class=n>quote_ident</span><span class=p>(</span><span class=n>rec</span><span class=p>.</span><span class=n>schemaname</span><span class=p>)</span><span class=w> </span><span class=o>||</span><span class=w> </span><span class=s1>&#39;.&#39;</span><span class=w> </span><span class=o>||</span><span class=w> </span><span class=n>quote_ident</span><span class=p>(</span><span class=n>rec</span><span class=p>.</span><span class=n>indexname</span><span class=p>));</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>END</span><span class=w> </span><span class=n>LOOP</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>END</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=err>$$</span><span class=w> </span><span class=k>LANGUAGE</span><span class=w> </span><span class=n>plpgsql</span><span class=p>;</span><span class=w>
-</span></span></span></code></pre></div><ol start=4><li>Хранимая процедура prewarm_schema, чтобы можно было прогревать любую схему одной командой:</li></ol><div class=highlight><pre tabindex=0 class=chroma><code class=language-SQL data-lang=SQL><span class=line><span class=cl><span class=k>CREATE</span><span class=w> </span><span class=k>OR</span><span class=w> </span><span class=k>REPLACE</span><span class=w> </span><span class=k>PROCEDURE</span><span class=w> </span><span class=n>prewarm_schema</span><span class=p>(</span><span class=k>schema_name</span><span class=w> </span><span class=nb>text</span><span class=p>)</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>LANGUAGE</span><span class=w> </span><span class=n>plpgsql</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>AS</span><span class=w> </span><span class=err>$$</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>DECLARE</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>rec</span><span class=w> </span><span class=n>record</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>BEGIN</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>-- Прогрев всех таблиц в указанной схеме
-</span></span></span><span class=line><span class=cl><span class=c1></span><span class=w>    </span><span class=k>FOR</span><span class=w> </span><span class=n>rec</span><span class=w> </span><span class=k>IN</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>SELECT</span><span class=w> </span><span class=n>schemaname</span><span class=p>,</span><span class=w> </span><span class=n>tablename</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>FROM</span><span class=w> </span><span class=n>pg_tables</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>WHERE</span><span class=w> </span><span class=n>schemaname</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>schema_name</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>LOOP</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>RAISE</span><span class=w> </span><span class=n>NOTICE</span><span class=w> </span><span class=s1>&#39;Prewarming table: %.%&#39;</span><span class=p>,</span><span class=w> </span><span class=n>rec</span><span class=p>.</span><span class=n>schemaname</span><span class=p>,</span><span class=w> </span><span class=n>rec</span><span class=p>.</span><span class=n>tablename</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>PERFORM</span><span class=w> </span><span class=n>pg_prewarm</span><span class=p>(</span><span class=n>quote_ident</span><span class=p>(</span><span class=n>rec</span><span class=p>.</span><span class=n>schemaname</span><span class=p>)</span><span class=w> </span><span class=o>||</span><span class=w> </span><span class=s1>&#39;.&#39;</span><span class=w> </span><span class=o>||</span><span class=w> </span><span class=n>quote_ident</span><span class=p>(</span><span class=n>rec</span><span class=p>.</span><span class=n>tablename</span><span class=p>));</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>END</span><span class=w> </span><span class=n>LOOP</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>-- Прогрев всех индексов в указанной схеме
-</span></span></span><span class=line><span class=cl><span class=c1></span><span class=w>    </span><span class=k>FOR</span><span class=w> </span><span class=n>rec</span><span class=w> </span><span class=k>IN</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>SELECT</span><span class=w> </span><span class=n>schemaname</span><span class=p>,</span><span class=w> </span><span class=n>indexname</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>FROM</span><span class=w> </span><span class=n>pg_indexes</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>WHERE</span><span class=w> </span><span class=n>schemaname</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>schema_name</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>LOOP</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>RAISE</span><span class=w> </span><span class=n>NOTICE</span><span class=w> </span><span class=s1>&#39;Prewarming index: %.%&#39;</span><span class=p>,</span><span class=w> </span><span class=n>rec</span><span class=p>.</span><span class=n>schemaname</span><span class=p>,</span><span class=w> </span><span class=n>rec</span><span class=p>.</span><span class=n>indexname</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>PERFORM</span><span class=w> </span><span class=n>pg_prewarm</span><span class=p>(</span><span class=n>quote_ident</span><span class=p>(</span><span class=n>rec</span><span class=p>.</span><span class=n>schemaname</span><span class=p>)</span><span class=w> </span><span class=o>||</span><span class=w> </span><span class=s1>&#39;.&#39;</span><span class=w> </span><span class=o>||</span><span class=w> </span><span class=n>quote_ident</span><span class=p>(</span><span class=n>rec</span><span class=p>.</span><span class=n>indexname</span><span class=p>));</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>END</span><span class=w> </span><span class=n>LOOP</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>END</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=err>$$</span><span class=p>;</span><span class=w>
-</span></span></span></code></pre></div><p>Вызов процедуры:</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-SQL data-lang=SQL><span class=line><span class=cl><span class=k>CALL</span><span class=w> </span><span class=n>prewarm_schema</span><span class=p>(</span><span class=s1>&#39;public&#39;</span><span class=p>);</span><span class=w> </span><span class=c1>-- или любое другое имя схемы
-</span></span></span></code></pre></div><ol start=5><li>Хранимая процедура только для таблиц (без индексов):</li></ol><div class=highlight><pre tabindex=0 class=chroma><code class=language-SQL data-lang=SQL><span class=line><span class=cl><span class=k>CREATE</span><span class=w> </span><span class=k>OR</span><span class=w> </span><span class=k>REPLACE</span><span class=w> </span><span class=k>PROCEDURE</span><span class=w> </span><span class=n>prewarm_only_tables</span><span class=p>(</span><span class=k>schema_name</span><span class=w> </span><span class=nb>text</span><span class=p>)</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>LANGUAGE</span><span class=w> </span><span class=n>plpgsql</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>AS</span><span class=w> </span><span class=err>$$</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>DECLARE</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>rec</span><span class=w> </span><span class=n>record</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>BEGIN</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>FOR</span><span class=w> </span><span class=n>rec</span><span class=w> </span><span class=k>IN</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>SELECT</span><span class=w> </span><span class=n>schemaname</span><span class=p>,</span><span class=w> </span><span class=n>tablename</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>FROM</span><span class=w> </span><span class=n>pg_tables</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>WHERE</span><span class=w> </span><span class=n>schemaname</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>schema_name</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>LOOP</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>RAISE</span><span class=w> </span><span class=n>NOTICE</span><span class=w> </span><span class=s1>&#39;Prewarming table: %.%&#39;</span><span class=p>,</span><span class=w> </span><span class=n>rec</span><span class=p>.</span><span class=n>schemaname</span><span class=p>,</span><span class=w> </span><span class=n>rec</span><span class=p>.</span><span class=n>tablename</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>PERFORM</span><span class=w> </span><span class=n>pg_prewarm</span><span class=p>(</span><span class=n>quote_ident</span><span class=p>(</span><span class=n>rec</span><span class=p>.</span><span class=n>schemaname</span><span class=p>)</span><span class=w> </span><span class=o>||</span><span class=w> </span><span class=s1>&#39;.&#39;</span><span class=w> </span><span class=o>||</span><span class=w> </span><span class=n>quote_ident</span><span class=p>(</span><span class=n>rec</span><span class=p>.</span><span class=n>tablename</span><span class=p>));</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>END</span><span class=w> </span><span class=n>LOOP</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=k>END</span><span class=p>;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w></span><span class=err>$$</span><span class=p>;</span><span class=w>
-</span></span></span></code></pre></div></div><footer class=post-footer><ul class=post-tags></ul></footer></article></main><footer class=footer><span>&copy; 2025 <a href=https://akozadaev.github.io/myblog/>Персональный блог бэкенд-разработчика</a></span> ·
-<span>Powered by
-<a href=https://gohugo.io/ rel="noopener noreferrer" target=_blank>Hugo</a> &
-<a href=https://github.com/adityatelange/hugo-PaperMod/ rel=noopener target=_blank>PaperMod</a></span></footer><a href=#top aria-label="go to top" title="Go to Top (Alt + G)" class=top-link id=top-link accesskey=g><svg viewBox="0 0 12 6" fill="currentColor"><path d="M12 6H0l6-6z"/></svg>
-</a><script>let menu=document.getElementById("menu");if(menu){const e=localStorage.getItem("menu-scroll-position");e&&(menu.scrollLeft=parseInt(e,10)),menu.onscroll=function(){localStorage.setItem("menu-scroll-position",menu.scrollLeft)}}document.querySelectorAll('a[href^="#"]').forEach(e=>{e.addEventListener("click",function(e){e.preventDefault();var t=this.getAttribute("href").substr(1);window.matchMedia("(prefers-reduced-motion: reduce)").matches?document.querySelector(`[id='${decodeURIComponent(t)}']`).scrollIntoView():document.querySelector(`[id='${decodeURIComponent(t)}']`).scrollIntoView({behavior:"smooth"}),t==="top"?history.replaceState(null,null," "):history.pushState(null,null,`#${t}`)})})</script><script>var mybutton=document.getElementById("top-link");window.onscroll=function(){document.body.scrollTop>800||document.documentElement.scrollTop>800?(mybutton.style.visibility="visible",mybutton.style.opacity="1"):(mybutton.style.visibility="hidden",mybutton.style.opacity="0")}</script><script>document.getElementById("theme-toggle").addEventListener("click",()=>{const e=document.querySelector("html");e.dataset.theme==="dark"?(e.dataset.theme="light",localStorage.setItem("pref-theme","light")):(e.dataset.theme="dark",localStorage.setItem("pref-theme","dark"))})</script></body></html>
+</code></pre><ol start="2">
+<li>Расширенный вариант с индексами (если нужно прогревать <strong>и таблицы, и их индексы</strong>):</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-SQL" data-lang="SQL"><span class="line"><span class="cl"><span class="k">DO</span><span class="w"> </span><span class="err">$$</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">DECLARE</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">rec</span><span class="w"> </span><span class="n">record</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">BEGIN</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">-- Прогреваем все таблицы
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="k">FOR</span><span class="w"> </span><span class="n">rec</span><span class="w"> </span><span class="k">IN</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">SELECT</span><span class="w"> </span><span class="n">schemaname</span><span class="p">,</span><span class="w"> </span><span class="n">tablename</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">FROM</span><span class="w"> </span><span class="n">pg_tables</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">WHERE</span><span class="w"> </span><span class="n">schemaname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;public&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">LOOP</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">RAISE</span><span class="w"> </span><span class="n">NOTICE</span><span class="w"> </span><span class="s1">&#39;Prewarming table: %.%&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">rec</span><span class="p">.</span><span class="n">schemaname</span><span class="p">,</span><span class="w"> </span><span class="n">rec</span><span class="p">.</span><span class="n">tablename</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">PERFORM</span><span class="w"> </span><span class="n">pg_prewarm</span><span class="p">(</span><span class="n">quote_ident</span><span class="p">(</span><span class="n">rec</span><span class="p">.</span><span class="n">schemaname</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="s1">&#39;.&#39;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">quote_ident</span><span class="p">(</span><span class="n">rec</span><span class="p">.</span><span class="n">tablename</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">END</span><span class="w"> </span><span class="n">LOOP</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">-- Прогреваем все индексы
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="k">FOR</span><span class="w"> </span><span class="n">rec</span><span class="w"> </span><span class="k">IN</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">SELECT</span><span class="w"> </span><span class="n">schemaname</span><span class="p">,</span><span class="w"> </span><span class="n">indexname</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">FROM</span><span class="w"> </span><span class="n">pg_indexes</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">WHERE</span><span class="w"> </span><span class="n">schemaname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;public&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">LOOP</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">RAISE</span><span class="w"> </span><span class="n">NOTICE</span><span class="w"> </span><span class="s1">&#39;Prewarming index: %.%&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">rec</span><span class="p">.</span><span class="n">schemaname</span><span class="p">,</span><span class="w"> </span><span class="n">rec</span><span class="p">.</span><span class="n">indexname</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">PERFORM</span><span class="w"> </span><span class="n">pg_prewarm</span><span class="p">(</span><span class="n">quote_ident</span><span class="p">(</span><span class="n">rec</span><span class="p">.</span><span class="n">schemaname</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="s1">&#39;.&#39;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">quote_ident</span><span class="p">(</span><span class="n">rec</span><span class="p">.</span><span class="n">indexname</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">END</span><span class="w"> </span><span class="n">LOOP</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">END</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="err">$$</span><span class="w"> </span><span class="k">LANGUAGE</span><span class="w"> </span><span class="n">plpgsql</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><ol start="4">
+<li>Хранимая процедура prewarm_schema, чтобы можно было прогревать любую схему одной командой:</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-SQL" data-lang="SQL"><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">PROCEDURE</span><span class="w"> </span><span class="n">prewarm_schema</span><span class="p">(</span><span class="k">schema_name</span><span class="w"> </span><span class="nb">text</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">LANGUAGE</span><span class="w"> </span><span class="n">plpgsql</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">AS</span><span class="w"> </span><span class="err">$$</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">DECLARE</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">rec</span><span class="w"> </span><span class="n">record</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">BEGIN</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">-- Прогрев всех таблиц в указанной схеме
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="k">FOR</span><span class="w"> </span><span class="n">rec</span><span class="w"> </span><span class="k">IN</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">SELECT</span><span class="w"> </span><span class="n">schemaname</span><span class="p">,</span><span class="w"> </span><span class="n">tablename</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">FROM</span><span class="w"> </span><span class="n">pg_tables</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">WHERE</span><span class="w"> </span><span class="n">schemaname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">schema_name</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">LOOP</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">RAISE</span><span class="w"> </span><span class="n">NOTICE</span><span class="w"> </span><span class="s1">&#39;Prewarming table: %.%&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">rec</span><span class="p">.</span><span class="n">schemaname</span><span class="p">,</span><span class="w"> </span><span class="n">rec</span><span class="p">.</span><span class="n">tablename</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">PERFORM</span><span class="w"> </span><span class="n">pg_prewarm</span><span class="p">(</span><span class="n">quote_ident</span><span class="p">(</span><span class="n">rec</span><span class="p">.</span><span class="n">schemaname</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="s1">&#39;.&#39;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">quote_ident</span><span class="p">(</span><span class="n">rec</span><span class="p">.</span><span class="n">tablename</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">END</span><span class="w"> </span><span class="n">LOOP</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="c1">-- Прогрев всех индексов в указанной схеме
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">    </span><span class="k">FOR</span><span class="w"> </span><span class="n">rec</span><span class="w"> </span><span class="k">IN</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">SELECT</span><span class="w"> </span><span class="n">schemaname</span><span class="p">,</span><span class="w"> </span><span class="n">indexname</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">FROM</span><span class="w"> </span><span class="n">pg_indexes</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">WHERE</span><span class="w"> </span><span class="n">schemaname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">schema_name</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">LOOP</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">RAISE</span><span class="w"> </span><span class="n">NOTICE</span><span class="w"> </span><span class="s1">&#39;Prewarming index: %.%&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">rec</span><span class="p">.</span><span class="n">schemaname</span><span class="p">,</span><span class="w"> </span><span class="n">rec</span><span class="p">.</span><span class="n">indexname</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">PERFORM</span><span class="w"> </span><span class="n">pg_prewarm</span><span class="p">(</span><span class="n">quote_ident</span><span class="p">(</span><span class="n">rec</span><span class="p">.</span><span class="n">schemaname</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="s1">&#39;.&#39;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">quote_ident</span><span class="p">(</span><span class="n">rec</span><span class="p">.</span><span class="n">indexname</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">END</span><span class="w"> </span><span class="n">LOOP</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">END</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="err">$$</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>Вызов процедуры:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-SQL" data-lang="SQL"><span class="line"><span class="cl"><span class="k">CALL</span><span class="w"> </span><span class="n">prewarm_schema</span><span class="p">(</span><span class="s1">&#39;public&#39;</span><span class="p">);</span><span class="w"> </span><span class="c1">-- или любое другое имя схемы
+</span></span></span></code></pre></div><ol start="5">
+<li>Хранимая процедура только для таблиц (без индексов):</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-SQL" data-lang="SQL"><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="k">REPLACE</span><span class="w"> </span><span class="k">PROCEDURE</span><span class="w"> </span><span class="n">prewarm_only_tables</span><span class="p">(</span><span class="k">schema_name</span><span class="w"> </span><span class="nb">text</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">LANGUAGE</span><span class="w"> </span><span class="n">plpgsql</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">AS</span><span class="w"> </span><span class="err">$$</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">DECLARE</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">rec</span><span class="w"> </span><span class="n">record</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">BEGIN</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">FOR</span><span class="w"> </span><span class="n">rec</span><span class="w"> </span><span class="k">IN</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">SELECT</span><span class="w"> </span><span class="n">schemaname</span><span class="p">,</span><span class="w"> </span><span class="n">tablename</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">FROM</span><span class="w"> </span><span class="n">pg_tables</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="k">WHERE</span><span class="w"> </span><span class="n">schemaname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">schema_name</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="n">LOOP</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">RAISE</span><span class="w"> </span><span class="n">NOTICE</span><span class="w"> </span><span class="s1">&#39;Prewarming table: %.%&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">rec</span><span class="p">.</span><span class="n">schemaname</span><span class="p">,</span><span class="w"> </span><span class="n">rec</span><span class="p">.</span><span class="n">tablename</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="n">PERFORM</span><span class="w"> </span><span class="n">pg_prewarm</span><span class="p">(</span><span class="n">quote_ident</span><span class="p">(</span><span class="n">rec</span><span class="p">.</span><span class="n">schemaname</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="s1">&#39;.&#39;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">quote_ident</span><span class="p">(</span><span class="n">rec</span><span class="p">.</span><span class="n">tablename</span><span class="p">));</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="k">END</span><span class="w"> </span><span class="n">LOOP</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">END</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="err">$$</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div>
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1314/myblog/">Персональный блог бэкенд-разработчика</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

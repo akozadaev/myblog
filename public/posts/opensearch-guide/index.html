@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="auto">
+
+<head><script src="/myblog/livereload.js?mindelay=10&amp;v=2&amp;port=1314&amp;path=myblog/livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>OpenSearch для начинающих: индексы, маппинги и бустинг | Персональный блог бэкенд-разработчика</title>
+<meta name="keywords" content="opensearch, elasticsearch, поисковые системы, индексация, базы данных">
+<meta name="description" content="OpenSearch -это мощная поисковая система с открытым исходным кодом, форк Elasticsearch. Если вы только начинаете работать с поисковыми системами, эта статья поможет разобраться в основах: как создавать индексы, настраивать структуру данных и использовать бустинг для улучшения релевантности результатов.
+Что такое OpenSearch?
+OpenSearch -это распределённая поисковая и аналитическая система, которая позволяет:
+
+Быстро искать по большим объёмам данных
+Индексировать структурированные и неструктурированные данные
+Выполнять сложные запросы с фильтрацией и ранжированием
+Работать с геопространственными данными
+Использовать векторный поиск для семантического поиска
+
+Простыми словами: OpenSearch -это как Google для ваших данных. Вы загружаете документы, а система позволяет быстро находить нужные по запросу.">
+<meta name="author" content="akozadaev">
+<link rel="canonical" href="http://localhost:1314/myblog/posts/opensearch-guide/">
+<link crossorigin="anonymous" href="/myblog/assets/css/stylesheet.a5781257de4197b8e3d54346acdf1dd55a9ba4cb91dcace192fc1baf228c08b5.css" integrity="sha256-pXgSV95Bl7jj1UNGrN8d1VqbpMuR3KzhkvwbryKMCLU=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1314/myblog/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1314/myblog/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1314/myblog/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1314/myblog/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1314/myblog/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1314/myblog/posts/opensearch-guide/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+        @media (prefers-color-scheme: light) {
+            .list::-webkit-scrollbar-thumb {
+                border-color: var(--code-bg);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1314/myblog/" accesskey="h" title="Персональный блог бэкенд-разработчика (Alt + H)">Персональный блог бэкенд-разработчика</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title entry-hint-parent">
+      OpenSearch для начинающих: индексы, маппинги и бустинг
+    </h1>
+    <div class="post-meta"><span title='2025-12-14 12:50:00 +0300 MSK'>December 14, 2025</span>&nbsp;·&nbsp;<span>akozadaev</span>
+
+</div>
+  </header> 
+  <div class="post-content"><p>OpenSearch -это мощная поисковая система с открытым исходным кодом, форк Elasticsearch. Если вы только начинаете работать с поисковыми системами, эта статья поможет разобраться в основах: как создавать индексы, настраивать структуру данных и использовать бустинг для улучшения релевантности результатов.</p>
+<h2 id="что-такое-opensearch">Что такое OpenSearch?<a hidden class="anchor" aria-hidden="true" href="#что-такое-opensearch">#</a></h2>
+<p>OpenSearch -это распределённая поисковая и аналитическая система, которая позволяет:</p>
+<ul>
+<li>Быстро искать по большим объёмам данных</li>
+<li>Индексировать структурированные и неструктурированные данные</li>
+<li>Выполнять сложные запросы с фильтрацией и ранжированием</li>
+<li>Работать с геопространственными данными</li>
+<li>Использовать векторный поиск для семантического поиска</li>
+</ul>
+<p><strong>Простыми словами</strong>: OpenSearch -это как Google для ваших данных. Вы загружаете документы, а система позволяет быстро находить нужные по запросу.</p>
+<h2 id="основные-понятия">Основные понятия<a hidden class="anchor" aria-hidden="true" href="#основные-понятия">#</a></h2>
+<h3 id="индекс-index">Индекс (Index)<a hidden class="anchor" aria-hidden="true" href="#индекс-index">#</a></h3>
+<p><strong>Индекс</strong> -это коллекция документов, имеющих схожие характеристики. Можно сравнить с таблицей в реляционной БД, но с важными отличиями:</p>
+<ul>
+<li>В БД вы определяете структуру (схему) заранее</li>
+<li>В OpenSearch структура определяется через <strong>маппинг</strong> (mapping), но может быть динамической</li>
+<li>Индекс может содержать миллионы документов и быстро находить нужные</li>
+</ul>
+<p><strong>Пример</strong>: индекс <code>locations</code> содержит информацию о локациях для бизнеса, индекс <code>products</code> -о товарах.</p>
+<h3 id="документ-document">Документ (Document)<a hidden class="anchor" aria-hidden="true" href="#документ-document">#</a></h3>
+<p><strong>Документ</strong> -это базовая единица информации в OpenSearch. Это JSON-объект, который содержит данные.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;loc_1&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Кафе на Тверской&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;address&#34;</span><span class="p">:</span> <span class="s2">&#34;ул. Тверская, д. 10, Москва&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;traffic_score&#34;</span><span class="p">:</span> <span class="mf">8.5</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;coordinates&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;lat&#34;</span><span class="p">:</span> <span class="mf">55.7558</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;lon&#34;</span><span class="p">:</span> <span class="mf">37.6173</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h3 id="маппинг-mapping">Маппинг (Mapping)<a hidden class="anchor" aria-hidden="true" href="#маппинг-mapping">#</a></h3>
+<p><strong>Маппинг</strong> -это определение структуры данных в индексе. Он описывает:</p>
+<ul>
+<li>Какие поля есть в документе</li>
+<li>Какой тип данных у каждого поля (текст, число, дата, геокоординаты)</li>
+<li>Как индексировать и искать по полям</li>
+</ul>
+<p>Маппинг похож на схему таблицы в БД, но более гибкий.</p>
+<h2 id="типы-данных-в-opensearch">Типы данных в OpenSearch<a hidden class="anchor" aria-hidden="true" href="#типы-данных-в-opensearch">#</a></h2>
+<p>OpenSearch поддерживает множество типов данных. Рассмотрим основные:</p>
+<h3 id="1-text-текст">1. Text (текст)<a hidden class="anchor" aria-hidden="true" href="#1-text-текст">#</a></h3>
+<p>Используется для полнотекстового поиска. Текст анализируется и разбивается на слова (токены).</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;text&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p><strong>Особенности</strong>:</p>
+<ul>
+<li>Текст разбивается на слова при индексации</li>
+<li>Поддерживает поиск по части слова, синонимам</li>
+<li>Можно настроить анализатор (как разбивать текст)</li>
+</ul>
+<p><strong>Пример использования</strong>: названия, описания, комментарии.</p>
+<h3 id="2-keyword-ключевое-слово">2. Keyword (ключевое слово)<a hidden class="anchor" aria-hidden="true" href="#2-keyword-ключевое-слово">#</a></h3>
+<p>Используется для точного совпадения. Значение хранится как есть, без анализа.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;status&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;keyword&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p><strong>Особенности</strong>:</p>
+<ul>
+<li>Идеально для фильтрации и сортировки</li>
+<li>Быстрый поиск по точному совпадению</li>
+<li>Подходит для enum-значений (статусы, категории)</li>
+</ul>
+<p><strong>Пример использования</strong>: статусы заказов, категории, коды.</p>
+<h3 id="3-number-числа">3. Number (числа)<a hidden class="anchor" aria-hidden="true" href="#3-number-числа">#</a></h3>
+<p>Поддерживает разные числовые типы: <code>long</code>, <code>integer</code>, <code>short</code>, <code>byte</code>, <code>double</code>, <code>float</code>.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;price&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;double&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">},</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;quantity&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;integer&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p><strong>Особенности</strong>:</p>
+<ul>
+<li>Используется для диапазонных запросов (больше, меньше)</li>
+<li>Подходит для сортировки и агрегаций</li>
+<li>Точность зависит от типа</li>
+</ul>
+<h3 id="4-date-дата">4. Date (дата)<a hidden class="anchor" aria-hidden="true" href="#4-date-дата">#</a></h3>
+<p>Хранит дату и время в формате ISO 8601.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;created_at&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;date&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p><strong>Особенности</strong>:</p>
+<ul>
+<li>Можно искать по диапазонам дат</li>
+<li>Поддерживает разные форматы</li>
+<li>Используется для временных фильтров</li>
+</ul>
+<h3 id="5-boolean-логический">5. Boolean (логический)<a hidden class="anchor" aria-hidden="true" href="#5-boolean-логический">#</a></h3>
+<p>Хранит <code>true</code> или <code>false</code>.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;is_active&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;boolean&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h3 id="6-geo-point-геокоординаты">6. Geo Point (геокоординаты)<a hidden class="anchor" aria-hidden="true" href="#6-geo-point-геокоординаты">#</a></h3>
+<p>Хранит географические координаты (широта, долгота).</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;location&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;geo_point&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p><strong>Особенности</strong>:</p>
+<ul>
+<li>Позволяет искать объекты в радиусе от точки</li>
+<li>Вычислять расстояние между точками</li>
+<li>Сортировать по расстоянию</li>
+</ul>
+<p><strong>Пример использования</strong>: поиск локаций рядом с пользователем.</p>
+<h3 id="7-object-объект">7. Object (объект)<a hidden class="anchor" aria-hidden="true" href="#7-object-объект">#</a></h3>
+<p>Вложенный JSON-объект.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;address&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;object&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;street&#34;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;text&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;city&#34;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;keyword&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;zip&#34;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;keyword&#34;</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h3 id="8-array-массив">8. Array (массив)<a hidden class="anchor" aria-hidden="true" href="#8-array-массив">#</a></h3>
+<p>Массив значений одного типа.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;tags&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;keyword&#34;</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>В JSON это будет выглядеть так:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;tags&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;cafe&#34;</span><span class="p">,</span> <span class="s2">&#34;restaurant&#34;</span><span class="p">,</span> <span class="s2">&#34;coffee&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h3 id="9-dense-vector-вектор">9. Dense Vector (вектор)<a hidden class="anchor" aria-hidden="true" href="#9-dense-vector-вектор">#</a></h3>
+<p>Используется для векторного поиска (kNN, семантический поиск).</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;embedding&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;dense_vector&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;dims&#34;</span><span class="p">:</span> <span class="mi">128</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p><strong>Особенности</strong>:</p>
+<ul>
+<li>Хранит числовой вектор фиксированной размерности</li>
+<li>Используется для поиска похожих документов</li>
+<li>Требует специальных запросов (kNN)</li>
+</ul>
+<h2 id="создание-индекса-и-маппинга">Создание индекса и маппинга<a hidden class="anchor" aria-hidden="true" href="#создание-индекса-и-маппинга">#</a></h2>
+<h3 id="шаг-1-создание-индекса-с-маппингом">Шаг 1: Создание индекса с маппингом<a hidden class="anchor" aria-hidden="true" href="#шаг-1-создание-индекса-с-маппингом">#</a></h3>
+<p>Создадим индекс для локаций бизнеса:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">PUT /locations
+</span></span><span class="line"><span class="cl"><span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;settings&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;number_of_shards&#34;</span>: 1,
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;number_of_replicas&#34;</span>: <span class="m">1</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;mappings&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;properties&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;id&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;type&#34;</span>: <span class="s2">&#34;keyword&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;name&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;type&#34;</span>: <span class="s2">&#34;text&#34;</span>,
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;fields&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;keyword&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;type&#34;</span>: <span class="s2">&#34;keyword&#34;</span>
+</span></span><span class="line"><span class="cl">          <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">      <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;address&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;type&#34;</span>: <span class="s2">&#34;text&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;region&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;type&#34;</span>: <span class="s2">&#34;keyword&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;city&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;type&#34;</span>: <span class="s2">&#34;keyword&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;coordinates&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;type&#34;</span>: <span class="s2">&#34;geo_point&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;traffic_score&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;type&#34;</span>: <span class="s2">&#34;float&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;competition_density&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;type&#34;</span>: <span class="s2">&#34;float&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;business_types_suitable&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;type&#34;</span>: <span class="s2">&#34;keyword&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;demographics&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;type&#34;</span>: <span class="s2">&#34;object&#34;</span>,
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;properties&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;age_group&#34;</span>: <span class="o">{</span><span class="s2">&#34;type&#34;</span>: <span class="s2">&#34;keyword&#34;</span><span class="o">}</span>,
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;average_income&#34;</span>: <span class="o">{</span><span class="s2">&#34;type&#34;</span>: <span class="s2">&#34;integer&#34;</span><span class="o">}</span>,
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;population_density&#34;</span>: <span class="o">{</span><span class="s2">&#34;type&#34;</span>: <span class="s2">&#34;integer&#34;</span><span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">      <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;embedding&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;type&#34;</span>: <span class="s2">&#34;dense_vector&#34;</span>,
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;dims&#34;</span>: <span class="m">128</span>
+</span></span><span class="line"><span class="cl">      <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><h3 id="разбор-маппинга">Разбор маппинга<a hidden class="anchor" aria-hidden="true" href="#разбор-маппинга">#</a></h3>
+<p><strong>Settings</strong> (настройки индекса):</p>
+<ul>
+<li><code>number_of_shards</code> -количество шардов (частей индекса). Влияет на производительность и масштабируемость</li>
+<li><code>number_of_replicas</code> -количество реплик. Обеспечивает отказоустойчивость</li>
+</ul>
+<p><strong>Mappings</strong> (структура данных):</p>
+<ul>
+<li><code>properties</code> -описание полей документа</li>
+</ul>
+<p><strong>Multi-fields</strong> (множественные поля):
+Обратите внимание на поле <code>name</code>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="s2">&#34;name&#34;</span><span class="err">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;text&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;fields&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;keyword&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;keyword&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Это позволяет:</p>
+<ul>
+<li>Искать по <code>name</code> как по тексту (полнотекстовый поиск)</li>
+<li>Использовать <code>name.keyword</code> для точного совпадения и сортировки</li>
+</ul>
+<h3 id="шаг-2-добавление-документа">Шаг 2: Добавление документа<a hidden class="anchor" aria-hidden="true" href="#шаг-2-добавление-документа">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">POST /locations/_doc
+</span></span><span class="line"><span class="cl"><span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;id&#34;</span>: <span class="s2">&#34;loc_1&#34;</span>,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;name&#34;</span>: <span class="s2">&#34;Кафе на Тверской&#34;</span>,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;address&#34;</span>: <span class="s2">&#34;ул. Тверская, д. 10, Москва&#34;</span>,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;region&#34;</span>: <span class="s2">&#34;Москва&#34;</span>,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;city&#34;</span>: <span class="s2">&#34;Москва&#34;</span>,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;coordinates&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;lat&#34;</span>: 55.7558,
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;lon&#34;</span>: 37.6173
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;traffic_score&#34;</span>: 8.5,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;competition_density&#34;</span>: 2.3,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;business_types_suitable&#34;</span>: <span class="o">[</span><span class="s2">&#34;cafe&#34;</span>, <span class="s2">&#34;restaurant&#34;</span><span class="o">]</span>,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;demographics&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;age_group&#34;</span>: <span class="s2">&#34;26-35&#34;</span>,
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;average_income&#34;</span>: 75000,
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;population_density&#34;</span>: <span class="m">5000</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;embedding&#34;</span>: <span class="o">[</span>0.1, 0.2, 0.3, ...<span class="o">]</span> // <span class="m">128</span> чисел
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><h2 id="поиск-и-запросы">Поиск и запросы<a hidden class="anchor" aria-hidden="true" href="#поиск-и-запросы">#</a></h2>
+<h3 id="простой-поиск">Простой поиск<a hidden class="anchor" aria-hidden="true" href="#простой-поиск">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">GET /locations/_search
+</span></span><span class="line"><span class="cl"><span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;query&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;match&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;name&#34;</span>: <span class="s2">&#34;кафе&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><h3 id="поиск-с-фильтрацией">Поиск с фильтрацией<a hidden class="anchor" aria-hidden="true" href="#поиск-с-фильтрацией">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">GET /locations/_search
+</span></span><span class="line"><span class="cl"><span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;query&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;bool&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;must&#34;</span>: <span class="o">[</span>
+</span></span><span class="line"><span class="cl">        <span class="o">{</span>
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;match&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;name&#34;</span>: <span class="s2">&#34;кафе&#34;</span>
+</span></span><span class="line"><span class="cl">          <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">      <span class="o">]</span>,
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;filter&#34;</span>: <span class="o">[</span>
+</span></span><span class="line"><span class="cl">        <span class="o">{</span>
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;term&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;city&#34;</span>: <span class="s2">&#34;Москва&#34;</span>
+</span></span><span class="line"><span class="cl">          <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">        <span class="o">{</span>
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;range&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;traffic_score&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">              <span class="s2">&#34;gte&#34;</span>: 7.0
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">          <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">      <span class="o">]</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p><strong>Разбор запроса</strong>:</p>
+<ul>
+<li><code>must</code> -документ должен соответствовать (влияет на релевантность)</li>
+<li><code>filter</code> -документ должен соответствовать (не влияет на релевантность, но быстрее)</li>
+</ul>
+<h3 id="геопространственный-поиск">Геопространственный поиск<a hidden class="anchor" aria-hidden="true" href="#геопространственный-поиск">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">GET /locations/_search
+</span></span><span class="line"><span class="cl"><span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;query&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;geo_distance&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;distance&#34;</span>: <span class="s2">&#34;5km&#34;</span>,
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;coordinates&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;lat&#34;</span>: 55.7558,
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;lon&#34;</span>: 37.6173
+</span></span><span class="line"><span class="cl">      <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;sort&#34;</span>: <span class="o">[</span>
+</span></span><span class="line"><span class="cl">    <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;_geo_distance&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;coordinates&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;lat&#34;</span>: 55.7558,
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;lon&#34;</span>: 37.6173
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;order&#34;</span>: <span class="s2">&#34;asc&#34;</span>,
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;unit&#34;</span>: <span class="s2">&#34;km&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">  <span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p>Этот запрос найдёт все локации в радиусе 5 км от указанной точки и отсортирует их по расстоянию.</p>
+<h2 id="бустинг-boosting">Бустинг (Boosting)<a hidden class="anchor" aria-hidden="true" href="#бустинг-boosting">#</a></h2>
+<p><strong>Бустинг</strong> -это механизм увеличения релевантности документов, которые соответствуют определённым критериям. Это позволяет &ldquo;поднять&rdquo; более важные результаты в выдаче.</p>
+<h3 id="простой-бустинг">Простой бустинг<a hidden class="anchor" aria-hidden="true" href="#простой-бустинг">#</a></h3>
+<p>Увеличим релевантность локаций с высоким traffic_score:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">GET /locations/_search
+</span></span><span class="line"><span class="cl"><span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;query&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;bool&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;must&#34;</span>: <span class="o">[</span>
+</span></span><span class="line"><span class="cl">        <span class="o">{</span>
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;match&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;name&#34;</span>: <span class="s2">&#34;кафе&#34;</span>
+</span></span><span class="line"><span class="cl">          <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">      <span class="o">]</span>,
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;should&#34;</span>: <span class="o">[</span>
+</span></span><span class="line"><span class="cl">        <span class="o">{</span>
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;range&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;traffic_score&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">              <span class="s2">&#34;gte&#34;</span>: 7.0,
+</span></span><span class="line"><span class="cl">              <span class="s2">&#34;boost&#34;</span>: 2.0
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">          <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">      <span class="o">]</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p><strong>Как это работает</strong>:</p>
+<ul>
+<li><code>should</code> -документ может соответствовать (необязательно)</li>
+<li><code>boost: 2.0</code> -если документ соответствует, его релевантность умножается на 2</li>
+</ul>
+<h3 id="функциональный-бустинг-function-score">Функциональный бустинг (Function Score)<a hidden class="anchor" aria-hidden="true" href="#функциональный-бустинг-function-score">#</a></h3>
+<p>Более гибкий способ -использовать <code>function_score</code>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">GET /locations/_search
+</span></span><span class="line"><span class="cl"><span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;query&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;function_score&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;query&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;bool&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;must&#34;</span>: <span class="o">[</span>
+</span></span><span class="line"><span class="cl">            <span class="o">{</span>
+</span></span><span class="line"><span class="cl">              <span class="s2">&#34;match&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="s2">&#34;name&#34;</span>: <span class="s2">&#34;кафе&#34;</span>
+</span></span><span class="line"><span class="cl">              <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">          <span class="o">]</span>,
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;filter&#34;</span>: <span class="o">[</span>
+</span></span><span class="line"><span class="cl">            <span class="o">{</span>
+</span></span><span class="line"><span class="cl">              <span class="s2">&#34;term&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="s2">&#34;city&#34;</span>: <span class="s2">&#34;Москва&#34;</span>
+</span></span><span class="line"><span class="cl">              <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">          <span class="o">]</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">      <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;functions&#34;</span>: <span class="o">[</span>
+</span></span><span class="line"><span class="cl">        <span class="o">{</span>
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;filter&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;range&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">              <span class="s2">&#34;traffic_score&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="s2">&#34;gte&#34;</span>: 7.0
+</span></span><span class="line"><span class="cl">              <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">          <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;weight&#34;</span>: 2.0
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">        <span class="o">{</span>
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;filter&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;range&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">              <span class="s2">&#34;competition_density&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="s2">&#34;lte&#34;</span>: 3.0
+</span></span><span class="line"><span class="cl">              <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">          <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;weight&#34;</span>: 1.5
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">      <span class="o">]</span>,
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;score_mode&#34;</span>: <span class="s2">&#34;sum&#34;</span>,
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;boost_mode&#34;</span>: <span class="s2">&#34;multiply&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p><strong>Разбор</strong>:</p>
+<ul>
+<li><code>functions</code> -список функций бустинга</li>
+<li><code>filter</code> -условие для применения бустинга</li>
+<li><code>weight</code> -вес бустинга</li>
+<li><code>score_mode: &quot;sum&quot;</code> -как объединять результаты функций (sum, multiply, avg, max, min)</li>
+<li><code>boost_mode: &quot;multiply&quot;</code> -как применять к исходному score (multiply, replace, sum, avg, max, min)</li>
+</ul>
+<h3 id="практический-пример-комбинированный-бустинг">Практический пример: комбинированный бустинг<a hidden class="anchor" aria-hidden="true" href="#практический-пример-комбинированный-бустинг">#</a></h3>
+<p>В рекомендательной системе для бизнеса мы используем комбинированный бустинг:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">GET /locations/_search
+</span></span><span class="line"><span class="cl"><span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;query&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;function_score&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;query&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;bool&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;must&#34;</span>: <span class="o">[</span>
+</span></span><span class="line"><span class="cl">            <span class="o">{</span>
+</span></span><span class="line"><span class="cl">              <span class="s2">&#34;match&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="s2">&#34;name&#34;</span>: <span class="s2">&#34;кафе&#34;</span>
+</span></span><span class="line"><span class="cl">              <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">          <span class="o">]</span>,
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;filter&#34;</span>: <span class="o">[</span>
+</span></span><span class="line"><span class="cl">            <span class="o">{</span>
+</span></span><span class="line"><span class="cl">              <span class="s2">&#34;term&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="s2">&#34;city&#34;</span>: <span class="s2">&#34;Москва&#34;</span>
+</span></span><span class="line"><span class="cl">              <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">            <span class="o">{</span>
+</span></span><span class="line"><span class="cl">              <span class="s2">&#34;term&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="s2">&#34;business_types_suitable&#34;</span>: <span class="s2">&#34;cafe&#34;</span>
+</span></span><span class="line"><span class="cl">              <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">          <span class="o">]</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">      <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;functions&#34;</span>: <span class="o">[</span>
+</span></span><span class="line"><span class="cl">        <span class="o">{</span>
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;filter&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;range&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">              <span class="s2">&#34;traffic_score&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="s2">&#34;gte&#34;</span>: 7.0
+</span></span><span class="line"><span class="cl">              <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">          <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;weight&#34;</span>: 2.0,
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;description&#34;</span>: <span class="s2">&#34;Бустинг для локаций с высоким трафиком&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">        <span class="o">{</span>
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;filter&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;range&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">              <span class="s2">&#34;competition_density&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="s2">&#34;lte&#34;</span>: 3.0
+</span></span><span class="line"><span class="cl">              <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">          <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;weight&#34;</span>: 1.5,
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;description&#34;</span>: <span class="s2">&#34;Бустинг для локаций с низкой конкуренцией&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">      <span class="o">]</span>,
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;score_mode&#34;</span>: <span class="s2">&#34;sum&#34;</span>,
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;boost_mode&#34;</span>: <span class="s2">&#34;multiply&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;sort&#34;</span>: <span class="o">[</span>
+</span></span><span class="line"><span class="cl">    <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;_score&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;order&#34;</span>: <span class="s2">&#34;desc&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">    <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;traffic_score&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;order&#34;</span>: <span class="s2">&#34;desc&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">    <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;competition_density&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;order&#34;</span>: <span class="s2">&#34;asc&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">  <span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p><strong>Логика</strong>:</p>
+<ol>
+<li>Находим все кафе в Москве</li>
+<li>Увеличиваем релевантность тех, у кого traffic_score &gt;= 7.0 (в 2 раза)</li>
+<li>Увеличиваем релевантность тех, у кого competition_density &lt;= 3.0 (в 1.5 раза)</li>
+<li>Сортируем по релевантности, затем по traffic_score (убывание), затем по competition_density (возрастание)</li>
+</ol>
+<h2 id="анализаторы-analyzers">Анализаторы (Analyzers)<a hidden class="anchor" aria-hidden="true" href="#анализаторы-analyzers">#</a></h2>
+<p><strong>Анализатор</strong> определяет, как текст разбивается на слова при индексации и поиске.</p>
+<h3 id="стандартный-анализатор">Стандартный анализатор<a hidden class="anchor" aria-hidden="true" href="#стандартный-анализатор">#</a></h3>
+<p>По умолчанию используется стандартный анализатор, который:</p>
+<ul>
+<li>Разбивает текст по пробелам и знакам препинания</li>
+<li>Приводит к нижнему регистру</li>
+<li>Удаляет стоп-слова (опционально)</li>
+</ul>
+<h3 id="кастомный-анализатор">Кастомный анализатор<a hidden class="anchor" aria-hidden="true" href="#кастомный-анализатор">#</a></h3>
+<p>Можно создать свой анализатор:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">PUT /locations
+</span></span><span class="line"><span class="cl"><span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;settings&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;analysis&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;analyzer&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;russian_analyzer&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;type&#34;</span>: <span class="s2">&#34;custom&#34;</span>,
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;tokenizer&#34;</span>: <span class="s2">&#34;standard&#34;</span>,
+</span></span><span class="line"><span class="cl">          <span class="s2">&#34;filter&#34;</span>: <span class="o">[</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;lowercase&#34;</span>,
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;russian_stop&#34;</span>,
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;russian_stemmer&#34;</span>
+</span></span><span class="line"><span class="cl">          <span class="o">]</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">      <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>,
+</span></span><span class="line"><span class="cl">  <span class="s2">&#34;mappings&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;properties&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="s2">&#34;name&#34;</span>: <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;type&#34;</span>: <span class="s2">&#34;text&#34;</span>,
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;analyzer&#34;</span>: <span class="s2">&#34;russian_analyzer&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p><strong>Компоненты анализатора</strong>:</p>
+<ul>
+<li><code>tokenizer</code> -разбивает текст на токены (слова)</li>
+<li><code>filter</code> -обрабатывает токены (нижний регистр, стемминг, синонимы)</li>
+</ul>
+<h2 id="практические-советы">Практические советы<a hidden class="anchor" aria-hidden="true" href="#практические-советы">#</a></h2>
+<h3 id="1-выбор-между-text-и-keyword">1. Выбор между text и keyword<a hidden class="anchor" aria-hidden="true" href="#1-выбор-между-text-и-keyword">#</a></h3>
+<ul>
+<li>Используйте <code>text</code> для поиска по содержимому (названия, описания)</li>
+<li>Используйте <code>keyword</code> для точного совпадения и фильтрации (статусы, коды, категории)</li>
+<li>Используйте multi-fields, если нужно и то, и другое</li>
+</ul>
+<h3 id="2-оптимизация-производительности">2. Оптимизация производительности<a hidden class="anchor" aria-hidden="true" href="#2-оптимизация-производительности">#</a></h3>
+<ul>
+<li>Используйте <code>filter</code> вместо <code>must</code> для условий, которые не влияют на релевантность</li>
+<li>Фильтры кэшируются и работают быстрее</li>
+<li>Ограничивайте количество возвращаемых документов (<code>size</code>)</li>
+</ul>
+<h3 id="3-бустинг">3. Бустинг<a hidden class="anchor" aria-hidden="true" href="#3-бустинг">#</a></h3>
+<ul>
+<li>Не переусердствуйте с бустингом -слишком высокие значения могут исказить результаты</li>
+<li>Тестируйте разные значения весов</li>
+<li>Используйте <code>function_score</code> для сложной логики</li>
+</ul>
+<h3 id="4-геопространственные-запросы">4. Геопространственные запросы<a hidden class="anchor" aria-hidden="true" href="#4-геопространственные-запросы">#</a></h3>
+<ul>
+<li>Используйте <code>geo_point</code> для координат</li>
+<li>Кэшируйте результаты для популярных локаций</li>
+<li>Учитывайте, что геозапросы могут быть ресурсоёмкими</li>
+</ul>
+<h2 id="заключение">Заключение<a hidden class="anchor" aria-hidden="true" href="#заключение">#</a></h2>
+<p>OpenSearch -мощный инструмент для поиска и анализа данных. Основные моменты:</p>
+<ol>
+<li><strong>Индекс</strong> -коллекция документов</li>
+<li><strong>Маппинг</strong> -структура данных (типы полей)</li>
+<li><strong>Документ</strong> -JSON-объект с данными</li>
+<li><strong>Бустинг</strong> -увеличение релевантности важных результатов</li>
+<li><strong>Анализаторы</strong> -обработка текста при индексации</li>
+</ol>
+<p>При работе обычно начинаем  с простых запросов, постепенно усложняя их. Если вы тоже работаете с OpenSearch, экспериментируйте с бустингом и анализируйте результаты. OpenSearch -это инструмент, который требует практики, но результаты того стоят.</p>
+<hr>
+<p><strong>Полезные ссылки:</strong></p>
+<ul>
+<li><a href="https://opensearch.org/docs/latest/">Документация OpenSearch</a></li>
+<li><a href="https://opensearch.org/docs/latest/api-reference/">OpenSearch API Reference</a></li>
+<li><a href="https://opensearch.org/docs/latest/query-dsl/">OpenSearch Query DSL</a></li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:1314/myblog/tags/opensearch/">Opensearch</a></li>
+      <li><a href="http://localhost:1314/myblog/tags/elasticsearch/">Elasticsearch</a></li>
+      <li><a href="http://localhost:1314/myblog/tags/%D0%BF%D0%BE%D0%B8%D1%81%D0%BA%D0%BE%D0%B2%D1%8B%D0%B5-%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%8B/">Поисковые Системы</a></li>
+      <li><a href="http://localhost:1314/myblog/tags/%D0%B8%D0%BD%D0%B4%D0%B5%D0%BA%D1%81%D0%B0%D1%86%D0%B8%D1%8F/">Индексация</a></li>
+      <li><a href="http://localhost:1314/myblog/tags/%D0%B1%D0%B0%D0%B7%D1%8B-%D0%B4%D0%B0%D0%BD%D0%BD%D1%8B%D1%85/">Базы Данных</a></li>
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1314/myblog/">Персональный блог бэкенд-разработчика</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>
