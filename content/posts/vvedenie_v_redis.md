@@ -356,12 +356,12 @@ CLUSTER NODES
 ```
 
 **Формат вывода CLUSTER NODES:**
-```
+```text
 <node-id> <ip:port@cport> <flags> <master-node-id> <ping-sent> <pong-recv> <config-epoch> <link-state> <slots>
 ```
 
 **Пример:**
-```
+```text
 a1b2c3... 127.0.0.1:7001@17001 myself,master - 0 0 0 connected 0-5460
 b2c3d4... 127.0.0.1:7002@17002 master - 0 1699123456789 1 connected 5461-10922
 c3d4e5... 127.0.0.1:7003@17003 master - 0 1699123456789 2 connected 10923-16383
@@ -575,7 +575,7 @@ CLUSTER NODES
 
 **Пример процесса failover:**
 
-```
+```text
 1. Мастер A (currentEpoch=10) становится недоступным
 2. Реплика B начинает выборы с currentEpoch=11
 3. Мастер C голосует за B (lastVoteEpoch=11)
@@ -588,7 +588,7 @@ CLUSTER NODES
 
 Каждый узел хранит конфигурацию в файле `nodes-<port>.conf`:
 
-```
+```text
 a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0 127.0.0.1:7001@17001 myself,master - 0 0 0 connected 0-5460
 b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0 127.0.0.1:7002@17002 master - 0 1699123456789 1 connected 5461-10922
 c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0 127.0.0.1:7003@17003 master - 0 1699123456789 2 connected 10923-16383
