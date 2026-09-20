@@ -189,7 +189,7 @@ $$ LANGUAGE plpgsql;
 ```
 
 Результат будет выглядеть примерно так:
-```
+```text
 NOTICE: Prewarming table: public.user NOTICE: Prewarming table: public.user_link 
 NOTICE: Prewarming table: public.link NOTICE: Prewarming table: public.task 
 NOTICE: Prewarming table: public.job_queue NOTICE: Prewarming table: 
