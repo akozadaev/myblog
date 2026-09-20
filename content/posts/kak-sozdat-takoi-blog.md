@@ -128,7 +128,7 @@ hugo version
 ```
 
 Должно вывести:
-```
+```text
 hugo v0.148.0+extended linux/amd64 BuildDate=...
 ```
 
@@ -300,7 +300,7 @@ hugo server -D
 
 2. **Откройте браузер** и перейдите по адресу:
 
-```
+```text
 http://localhost:1313
 ```
 
@@ -397,7 +397,7 @@ jobs:
 
 Убедитесь, что в `.gitignore` есть:
 
-```
+```text
 /public
 /resources
 .hugo_build.lock
